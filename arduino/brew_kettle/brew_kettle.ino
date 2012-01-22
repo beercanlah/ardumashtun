@@ -4,6 +4,8 @@
 // Get it at http://arduiniana.org/libraries/streaming/
 #include <Streaming.h>
 
+const byte pumpPin = 2;
+
 // Mustnt conflict / collide with our message payload data.
 char field_separator = ',';
 char command_separator = ';';
@@ -36,8 +38,12 @@ void pump_msg() {
   while (cmdMessenger.available()) {
     char buf[350] = {'\0'};
     cmdMessenger.copyString(buf, 350);
-    if (buf[0]) {
-      cmdMessenger.sendCmd(kACK, buf);
+    cmdMessenger.sendCmd(kACK, buf);
+    if (strncmp(buf, "1", 1) == 0) {
+      digitalWrite(pumpPin, HIGH);
+    }
+    else {
+      digitalWrite(pumpPin, LOW);
     }
   }
 }
@@ -54,6 +60,8 @@ void unknownCmd()
 }
 
 void setup() {
+  pinMode(pumpPin, OUTPUT);
+
   Serial.begin(57600);
   cmdMessenger.print_LF_CR();
   
