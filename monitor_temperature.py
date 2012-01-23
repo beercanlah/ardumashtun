@@ -4,40 +4,29 @@ import matplotlib.pyplot as plt
 import csv
 import os
 import brewkettle
-
-def get_temperature(serial):
-    serial.write("5;")
-    # First line is ack
-    string = serial.readline()
-    print string
-    # Second line is data
-    string = serial.readline()
-    # Its of the form CMD,Temperature;
-    # so first get rid of , then of ; by splitting
-    string = (string.split(",")[1]).split(";")[0]
-    return int(string) / 10.0
+reload(brewkettle)
 
 filename = time.strftime("%Y-%m-%d %H:%M") + ".csv"
-location = os.path.join("data", filename)
-csv_writer = csv.writer(open(location, "w"))
+path = os.path.join("data", filename)
+f = open(path, "w")
+csv_writer = csv.writer(f)
 
-serial = serial.Serial("/dev/tty.usbmodem1a21", baudrate=57600,
-                       timeout=2)
+kettle = brewkettle.BrewKettle()
 
-temperature_list = []
-time_list = []
-previous = time.time()
+start = time.time()
+previous = start
 while(True):
     try:
         now = time.time()
-        if (now - previous > 1):
-            temperature = get_temperature(serial)
-            time = now - previous
-            print "Time:\t\t" + time
-            print "Temperature:\t" + temperature
-            csv_wrie.writerow(time, temperature)
+        if (now - previous > 2):
+            temperature = kettle.get_temperature()
+            current = now - start
+            print "Time:\t\t" + str(current)
+            print "Temperature:\t" + str(temperature)
+            csv_writer.writerow((current, temperature))
             previous = now
     except KeyboardInterrupt:
-        serial.close()
+        f.close()
+        kettle.exit()
         print "Done"
         break
