@@ -12,6 +12,7 @@ f = open(path, "w")
 csv_writer = csv.writer(f)
 
 kettle = brewkettle.BrewKettle()
+kettle.turn_pump_on()
 
 start = time.time()
 previous = start
