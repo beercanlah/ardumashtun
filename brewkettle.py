@@ -14,6 +14,7 @@ class BrewKettle():
 
     def exit(self):
         self.turn_pump_off()
+        self.turn_heater_off()
         self.serial.close()
 
     def get_temperature(self):
@@ -37,7 +38,12 @@ class BrewKettle():
         self._echo_readlines()
 
     def turn_heater_on(self):
-        pass
+        self.serial.write("6,1;")
+        self._echo_readlines()
+
+    def turn_heater_off(self):
+        self.serial.write("6,0;")
+        self._echo_readlines()
 
     def _echo_readlines(self):
         for line in self.serial.readlines():
