@@ -10,16 +10,18 @@ filename = time.strftime("%Y-%m-%d %H:%M") + ".csv"
 path = os.path.join("data", filename)
 f = open(path, "w")
 csv_writer = csv.writer(f)
+csv_writer.writerow(["Time [s]", "Temperature [C]"])
 
 kettle = brewkettle.BrewKettle()
 kettle.turn_pump_on()
+kettle.turn_heater_on()
 
 start = time.time()
-previous = start
+previous = 0
 while(True):
     try:
         now = time.time()
-        if (now - previous > 2):
+        if (now - previous > 10):
             temperature = kettle.get_temperature()
             current = now - start
             print "Time:\t\t" + str(current)
