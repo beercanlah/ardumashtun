@@ -30,11 +30,15 @@ class BrewKettle():
 
     def turn_pump_on(self):
         self.serial.write("4,1;")
-        for line in self.serial.readlines():
-            print line
+        self._echo_readlines()
 
     def turn_pump_off(self):
         self.serial.write("4,0;")
+        self._echo_readlines()
+
+    def turn_heater_on(self):
+        pass
+
+    def _echo_readlines(self):
         for line in self.serial.readlines():
             print line
-        
