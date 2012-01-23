@@ -13,14 +13,15 @@ with open(path, "w") as f:
 
 kettle = brewkettle.BrewKettle()
 kettle.turn_pump_on()
-kettle.turn_heater_on()
+kettle.set_heater_duty_cycle(20)
 
 start = time.time()
 previous = 0
 while(True):
     try:
         now = time.time()
-        if (now - previous > 10):
+        kettle.check_for_serial()
+        if (now - previous > 1):
             temperature = kettle.get_temperature()
             current = now - start
             print "Time:\t\t" + str(current)

@@ -31,8 +31,8 @@ CmdMessenger cmdMessenger = CmdMessenger(Serial, field_separator, \
 enum
 {
   kCOMM_ERROR = 000, 
-  kACK = 001,
-  kARDUINO_READY = 002, 
+  kSTATUS = 001,
+  kTEMPERATURE = 002, 
   kERR = 003,
   kSEND_CMDS_END, // Mustnt delete this line
 };
@@ -48,11 +48,11 @@ messengerCallbackFunction messengerCallbacks[] =
 };
 
 void pump_msg() {
-  cmdMessenger.sendCmd(kACK, "Pump msg received");
+  cmdMessenger.sendCmd(kSTATUS, "Pump msg received");
   while (cmdMessenger.available()) {
     char buf[350] = {'\0'};
     cmdMessenger.copyString(buf, 350);
-    cmdMessenger.sendCmd(kACK, buf);
+    cmdMessenger.sendCmd(kSTATUS, buf);
     if (strncmp(buf, "1", 1) == 0) {
       digitalWrite(pumpPin, HIGH);
     }
@@ -66,7 +66,7 @@ unsigned long windowSize;
 int dutyCycle; 
 
 void heater_msg() {
-  cmdMessenger.sendCmd(kACK, "Heater msg received");
+  cmdMessenger.sendCmd(kSTATUS, "Heater msg received");
   while (cmdMessenger.available()) {
     char buf[350] = {'\0'};
     cmdMessenger.copyString(buf, 350);
@@ -83,15 +83,15 @@ void heater_msg() {
 }
 
 void temp_msg() {
-  cmdMessenger.sendCmd(kACK, "Request for temperature received");
+  cmdMessenger.sendCmd(kSTATUS, "Request for temperature received");
   char temp[5];
   itoa(temperature, temp, 10);
-  cmdMessenger.sendCmd(kACK, temp);
+  cmdMessenger.sendCmd(kTEMPERATURE, temp);
 }
 
 void arduino_ready() {
   // In response to ping. We just send a throw-away ack to say "im alive"
-  cmdMessenger.sendCmd(kACK,"Arduino ready");
+  cmdMessenger.sendCmd(kSTATUS,"Arduino ready");
 }
 
 void unknownCmd()
@@ -144,8 +144,8 @@ void controlHeater() {
       windowStartTime = millis();
     }
 
-    // 5min is 300'000 ms    
-    unsigned long windowSize = 300000;
+    // 1min is 60'000 ms    
+    unsigned long windowSize = 60000;
     
     // The onTime is windowSize * dutyCycle and since
     // dutyCycle is in percent we divide by 100
@@ -179,7 +179,6 @@ void setup() {
   Serial.begin(57600);
   cmdMessenger.print_LF_CR();
   
-  cmdMessenger.attach(kARDUINO_READY, arduino_ready);
   cmdMessenger.attach(unknownCmd);
   cmdMessenger.attach(4, pump_msg);
   cmdMessenger.attach(5, temp_msg);
