@@ -10,6 +10,11 @@
 const byte pumpPin = 2;
 const byte heaterPin = 4;
 
+unsigned long currentMillis;
+unsigned long previousMillis;
+byte slowCount;
+
+
 // Lookup table for thermistor. Substract adcSubstract from ADC and then
 // use the result as an index. Temp is in 23.1 format. Range from -5
 // to 40 degrees only. Calculated for bridge formed by therm, 15k and 4.7V
@@ -17,7 +22,7 @@ const byte heaterPin = 4;
 double temperature;
 double setpoint;
 double dutyCycle;
-PID temperaturePID(&temperature, &dutyCycle, &setpoint, 50, 0, 0, DIRECT);
+PID temperaturePID(&temperature, &dutyCycle, &setpoint, 100, 0, 0, DIRECT);
   
 const int adcSubstract = 51;
 const int adcMax = 784;
@@ -37,11 +42,12 @@ enum
   kCOMM_ERROR = 000, 
   kSTATUS = 001,
   kTEMPERATURE = 002, 
-  kERR = 003,
+  kINOUTSET = 003,
   kSEND_CMDS_END, // Mustnt delete this line
 };
 
 #define STATMSG "1,"
+#define INOUTSETMSG "3,"
 #define ENDMSG ";\r\n"
 
 // Commands we send from the PC and want to recieve on the Arduino.
@@ -52,6 +58,7 @@ messengerCallbackFunction messengerCallbacks[] =
   temp_msg, // 005
   heater_msg, // 006
   setPIDonoff_msg, // 007
+  getINOUTSET_msg, // 008
   NULL
 };
 
@@ -69,6 +76,24 @@ void pump_msg() {
   }
 }
 
+void temp_msg() {
+  /* cmdMessenger.sendCmd(kSTATUS, "Request for temperature received"); */
+  char temp[5];
+  itoa(temperatureToInt(temperature), temp, 10);
+  cmdMessenger.sendCmd(kTEMPERATURE, temp);
+}
+
+void heater_msg() {
+  /* Serial << STATMSG << "Heater msg received" << ENDMSG; */
+  while (cmdMessenger.available()) {
+    char buf[350] = {'\0'};
+    cmdMessenger.copyString(buf, 350);
+    // Its of the form int, where int is percent
+    // duty cycle
+    setDutyCycle(atoi(buf));
+  }
+}
+
 void setPIDonoff_msg() {
   Serial << STATMSG << "Set PID on off msg received" << ENDMSG;
   while (cmdMessenger.available()) {
@@ -83,23 +108,12 @@ void setPIDonoff_msg() {
   }
 }
 
-void heater_msg() {
-  /* Serial << STATMSG << "Heater msg received" << ENDMSG; */
-  while (cmdMessenger.available()) {
-    char buf[350] = {'\0'};
-    cmdMessenger.copyString(buf, 350);
-    // Its of the form int, where int is percent
-    // duty cycle
-    setDutyCycle(atoi(buf));
-  }
+void getINOUTSET_msg() {
+  Serial << STATMSG << "Get Input Output Setpoint msg received" << ENDMSG;
+  Serial << INOUTSETMSG << temperature << "," << dutyCycle << "," \
+	 << setpoint << ENDMSG;
 }
-
-void temp_msg() {
-  /* cmdMessenger.sendCmd(kSTATUS, "Request for temperature received"); */
-  char temp[5];
-  itoa(temperatureToInt(temperature), temp, 10);
-  cmdMessenger.sendCmd(kTEMPERATURE, temp);
-}
+  
 
 void arduino_ready() {
   // In response to ping. We just send a throw-away ack to say "im alive"
@@ -157,12 +171,26 @@ void heaterOff() {
 }
 
 void controlHeater() {
+  // Convert double duty cycle to long for calculation
   unsigned long intDutyCycle = int(dutyCycle);
-  if (intDutyCycle < 0) {
+  
+  // If we are not in PID controlled mode
+  // we can skip the calculation of the window size
+  // and be constantly on or off if the duty cycle is
+  // larger then 100 or smaller then 0
+  // If we wouldn't check for being in PID mode
+  // then the PID would set the duty cycle to 
+  // zero, we would exit the dutycycle mode and
+  // when the PID sets it greater then zero again enter
+  // it again, but the window would be reset... this leads
+  // to a lot of relay action around setpoint...
+  boolean inPIDmode = temperaturePID.GetMode();
+  
+  if (!inPIDmode && intDutyCycle < 0) {
     heaterOff();
     inDutyCycleMode = LOW;
   }
-  else if (intDutyCycle > 99) {
+  else if (!inPIDmode && intDutyCycle > 99) {
     heaterOn();
     inDutyCycleMode = LOW;
   }
@@ -170,7 +198,7 @@ void controlHeater() {
     // If you just entered duty cycle mode
     // start first window
     if (!inDutyCycleMode) {
-      windowStartTime = millis();
+      windowStartTime = currentMillis;
     }
 
     // 1min is 60'000 ms    
@@ -181,10 +209,10 @@ void controlHeater() {
     unsigned long onTime = intDutyCycle * (windowSize / 100);
     
     // Shift window time if  needed
-    if (millis() - windowStartTime > windowSize)
+    if (currentMillis - windowStartTime > windowSize)
       windowStartTime += windowSize;
 
-    if (millis() - windowStartTime < onTime) {
+    if (currentMillis - windowStartTime < onTime) {
       heaterOn();
     }
     else {
@@ -199,7 +227,7 @@ void setup() {
   pinMode(pumpPin, OUTPUT);
   pinMode(heaterPin, OUTPUT);
   dutyCycle = 0;
-  setpoint = 40;
+  setpoint = 47;
   
   temperaturePID.SetMode(MANUAL);
   temperaturePID.SetOutputLimits(0, 100);
@@ -212,12 +240,10 @@ void setup() {
   cmdMessenger.attach(5, temp_msg);
   cmdMessenger.attach(6, heater_msg);
   cmdMessenger.attach(7, setPIDonoff_msg);
+  cmdMessenger.attach(8, getINOUTSET_msg);
   arduino_ready();
 }
 
-unsigned long currentMillis;
-unsigned long previousMillis;
-byte slowCount;
 void loop () {
   currentMillis = millis();
   cmdMessenger.feedinSerialData();
@@ -229,7 +255,7 @@ void loop () {
     previousMillis = currentMillis;
     slowCount++;
     if (slowCount > 50) {
-      Serial << STATMSG << "Duty Cycle is " << dutyCycle << ENDMSG;
+      /* Serial << STATMSG << "Duty Cycle is " << dutyCycle << ENDMSG; */
       slowCount = 0;
     }
   }
