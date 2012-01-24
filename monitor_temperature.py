@@ -12,8 +12,9 @@ with open(path, "w") as f:
     csv_writer.writerow(("Time [s]", "Temperature [C]"))
 
 kettle = brewkettle.BrewKettle()
+
 kettle.turn_pump_on()
-kettle.set_heater_duty_cycle(20)
+kettle.turn_PID_on()
 
 start = time.time()
 previous = 0
@@ -22,10 +23,12 @@ while(True):
         now = time.time()
         kettle.check_for_serial()
         if (now - previous > 1):
-            temperature = kettle.get_temperature()
+            temperature, dutycycle, setpoint = kettle.get_in_out_set()
             current = now - start
             print "Time:\t\t" + str(current)
             print "Temperature:\t" + str(temperature)
+            print "Duty Cycle:\t" + str(dutycycle)
+            print "Setpoint:\t" + str(setpoint)
             with open(path, "a") as f:
                 csv_writer = csv.writer(f)
                 csv_writer.writerow((current, temperature))
