@@ -37,6 +37,9 @@ enum
   kSEND_CMDS_END, // Mustnt delete this line
 };
 
+#define STATMSG "1,"
+#define ENDMSG ";\r\n"
+
 // Commands we send from the PC and want to recieve on the Arduino.
 // They start at the address kSEND_CMDS_END
 messengerCallbackFunction messengerCallbacks[] =
@@ -72,13 +75,7 @@ void heater_msg() {
     cmdMessenger.copyString(buf, 350);
     // Its of the form int, where int is percent
     // duty cycle
-    dutyCycle = dutyCycle = atoi(buf);
-    Serial.print(dutyCycle);
-    // Check bounds
-    if (dutyCycle > 100)
-      dutyCycle = 100;
-    if (dutyCycle < 0)
-      dutyCycle = 0;
+    setDutyCycle(atoi(buf));
   }
 }
 
@@ -117,6 +114,19 @@ int measureTemperature() {
 unsigned long windowStartTime;
 boolean inDutyCycleMode;
 boolean heaterIsOn;
+
+void setDutyCycle(int value) {
+  // Check bounds
+  if (value > 100) {
+    value = 100;
+  }
+  if (value < 0) {
+    value = 0;
+  }
+  dutyCycle = value;
+  Serial << STATMSG << "Set duty cycle to " << dutyCycle << ENDMSG;
+}
+    
 
 void heaterOn() {
   digitalWrite(heaterPin, HIGH);
