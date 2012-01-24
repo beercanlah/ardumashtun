@@ -17,7 +17,7 @@ const byte heaterPin = 4;
 double temperature;
 double setpoint;
 double dutyCycle;
-PID temperaturePID(&temperature, &dutyCycle, &setpoint, 10, 0, 0, DIRECT);
+PID temperaturePID(&temperature, &dutyCycle, &setpoint, 50, 0, 0, DIRECT);
   
 const int adcSubstract = 51;
 const int adcMax = 784;
@@ -99,20 +99,21 @@ void temp_msg() {
   char temp[5];
   itoa(temperatureToInt(temperature), temp, 10);
   cmdMessenger.sendCmd(kTEMPERATURE, temp);
+  Serial << temperature;
 }
 
 void arduino_ready() {
   // In response to ping. We just send a throw-away ack to say "im alive"
-  cmdMessenger.sendCmd(kSTATUS,"Arduino ready");
+  /* cmdMessenger.sendCmd(kSTATUS,"Arduino ready"); */
 }
 
 void unknownCmd()
 {
   // Default response for unknown commands and corrupt messages
-  cmdMessenger.sendCmd(kERR,"Unknown command");
+  /* cmdMessenger.sendCmd(kERR,"Unknown command"); */
 }
 
-int measureTemperature() {
+void measureTemperature() {
   int index = analogRead(A0) - adcSubstract;
   if (index < 0)
   {
@@ -122,12 +123,12 @@ int measureTemperature() {
   {
     index = adcMax;
   }
-  int temperature = pgm_read_word(&temperatureTable[index]);
-  return double(temperature)/10;
+  int lookup = pgm_read_word(&temperatureTable[index]);
+  temperature = double(lookup)/10.0;
 }
 
 int temperatureToInt(double temperature) {
-  return int(10*temperature);
+  return int(round(10*temperature));
 }
 
 unsigned long windowStartTime;
@@ -221,12 +222,14 @@ void loop () {
   cmdMessenger.feedinSerialData();
   
   if (currentMillis - previousMillis > 100) {
+    measureTemperature();
     temperaturePID.Compute();
     controlHeater();
-    temperature = measureTemperature();
     previousMillis = currentMillis;
     slowCount++;
     if (slowCount > 50) {
+      Serial << temperature << ENDMSG;
+      Serial << analogRead(A0) << ENDMSG;
       Serial << STATMSG << "Duty Cycle is " << dutyCycle << ENDMSG;
       slowCount = 0;
     }
