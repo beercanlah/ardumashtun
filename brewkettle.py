@@ -24,6 +24,13 @@ class BrewKettle():
         self.check_for_serial()
         return self.temperature
 
+    def get_in_out_set(self):
+        self.serial.write("8;")
+        self.check_for_serial()
+        return (self.temperature,
+                self.duty_cycle,
+                self.setpoint)
+
     def turn_PID_on(self):
         self.serial.write("7,1;")
         self.check_for_serial()
@@ -66,10 +73,13 @@ class BrewKettle():
             cmd_list = line.split(",")
 
             # First element is command and an int
-            cmd_list[0] = int(cmd_list[0])
-            if cmd_list[0] is 2:
+            if cmd_list[0] is "2":
                 self.temperature = np.round(int(cmd_list[1]) / 10.0, 1)
                 print "Temperature received: " + str(self.temperature)
+            elif cmd_list[0] is "3":
+                self.temperature = float(cmd_list[1])
+                self.duty_cycle = float(cmd_list[2])
+                self.setpoint = float(cmd_list[3])
             else:
                 print line
 
