@@ -16,12 +16,21 @@ class BrewKettle():
     def exit(self):
         self.turn_pump_off()
         self.turn_heater_off()
+        self.turn_PID_off()
         self.serial.close()
 
     def get_temperature(self):
         self.serial.write("5;")
         self.check_for_serial()
         return self.temperature
+
+    def turn_PID_on(self):
+        self.serial.write("7,1;")
+        self.check_for_serial()
+
+    def turn_PID_off(self):
+        self.serial.write("7,0;")
+        self.check_for_serial()
 
     def turn_pump_on(self):
         self.serial.write("4,1;")
