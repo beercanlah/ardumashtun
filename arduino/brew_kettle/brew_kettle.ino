@@ -55,7 +55,6 @@ void pump_msg() {
   while (cmdMessenger.available()) {
     char buf[350] = {'\0'};
     cmdMessenger.copyString(buf, 350);
-    cmdMessenger.sendCmd(kSTATUS, buf);
     if (strncmp(buf, "1", 1) == 0) {
       digitalWrite(pumpPin, HIGH);
     }
@@ -69,7 +68,7 @@ unsigned long windowSize;
 int dutyCycle; 
 
 void heater_msg() {
-  cmdMessenger.sendCmd(kSTATUS, "Heater msg received");
+  Serial << STATMSG << "Heater msg received" << ENDMSG;
   while (cmdMessenger.available()) {
     char buf[350] = {'\0'};
     cmdMessenger.copyString(buf, 350);
@@ -127,7 +126,6 @@ void setDutyCycle(int value) {
   Serial << STATMSG << "Set duty cycle to " << dutyCycle << ENDMSG;
 }
     
-
 void heaterOn() {
   digitalWrite(heaterPin, HIGH);
   heaterIsOn = HIGH;
@@ -166,13 +164,9 @@ void controlHeater() {
       windowStartTime += windowSize;
 
     if (millis() - windowStartTime < onTime) {
-      /* if (!heaterIsOn) */
-      /* 	Serial << "Heater on " << millis()/1000 << "\n"; */
       heaterOn();
     }
     else {
-      /* if (heaterIsOn) */
-      /* 	Serial << "Heater off" << millis()/1000 << "\n"; */
       heaterOff();
     }
     
