@@ -99,7 +99,6 @@ void temp_msg() {
   char temp[5];
   itoa(temperatureToInt(temperature), temp, 10);
   cmdMessenger.sendCmd(kTEMPERATURE, temp);
-  Serial << temperature;
 }
 
 void arduino_ready() {
@@ -201,7 +200,9 @@ void setup() {
   pinMode(heaterPin, OUTPUT);
   dutyCycle = 0;
   setpoint = 40;
+  
   temperaturePID.SetMode(MANUAL);
+  temperaturePID.SetOutputLimits(0, 100);
   
   Serial.begin(57600);
   cmdMessenger.print_LF_CR();
@@ -228,8 +229,6 @@ void loop () {
     previousMillis = currentMillis;
     slowCount++;
     if (slowCount > 50) {
-      Serial << temperature << ENDMSG;
-      Serial << analogRead(A0) << ENDMSG;
       Serial << STATMSG << "Duty Cycle is " << dutyCycle << ENDMSG;
       slowCount = 0;
     }
