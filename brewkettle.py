@@ -41,11 +41,11 @@ class BrewKettle():
         self.check_for_serial()
 
     def turn_heater_on(self):
-        self.serial.write("6,1;")
+        self.serial.write("7,1;")
         self.check_for_serial()
 
     def turn_heater_off(self):
-        self.serial.write("6,0;")
+        self.serial.write("7,0;")
         self.check_for_serial()
 
     def set_heater_duty_cycle(self, percent):
