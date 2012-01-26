@@ -173,19 +173,27 @@ void setDutyCycle(int value) {
   if (value < 0) {
     value = 0;
   }
-  /* Serial << STATMSG << "Set duty cycle to " << value << ENDMSG; */
+  Serial << STATMSG << "Set duty cycle to " << value << ENDMSG;
   dutyCycle = double(value);
 }
     
 void heaterOn() {
-  digitalWrite(heaterPin, HIGH);
+  if (!heaterIsOn) {
+    digitalWrite(heaterPin, HIGH);
+    Serial << STATMSG << "Turning heater on" << dutyCycle << ENDMSG;
+  }
   heaterIsOn = HIGH;
 }
 
 void heaterOff() {
-  digitalWrite(heaterPin, LOW);
+  if (heaterIsOn) {
+    digitalWrite(heaterPin, LOW);
+    Serial << STATMSG << "Turning heater off" << dutyCycle << ENDMSG;
+  }
   heaterIsOn = LOW;
 }
+// 30 sec
+const unsigned long windowSize = 10000;
 
 void controlHeater() {
   // Convert double duty cycle to long for calculation
@@ -217,9 +225,6 @@ void controlHeater() {
     if (!inDutyCycleMode) {
       windowStartTime = currentMillis;
     }
-
-    // 1min is 60'000 ms    
-    const unsigned long windowSize = 60000;
     
     // The onTime is windowSize * dutyCycle and since
     // dutyCycle is in percent we divide by 100
