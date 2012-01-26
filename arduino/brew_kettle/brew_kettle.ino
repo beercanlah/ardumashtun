@@ -59,6 +59,7 @@ messengerCallbackFunction messengerCallbacks[] =
   heater_msg, // 006
   setPIDonoff_msg, // 007
   getINOUTSET_msg, // 008
+  changeSET_msg, // 009
   NULL
 };
 
@@ -113,7 +114,17 @@ void getINOUTSET_msg() {
   Serial << INOUTSETMSG << temperature << "," << dutyCycle << "," \
 	 << setpoint << ENDMSG;
 }
-  
+
+void changeSET_msg() {
+  /* Serial << STATMSG << "Change set msg received" << ENDMSG; */
+  while (cmdMessenger.available()) {
+    char buf[350] = {'\0'};
+    cmdMessenger.copyString(buf, 350);
+    // Its of the form int, where int is percent
+    // duty cycle
+    setSetPoint(atoi(buf));
+  }
+}
 
 void arduino_ready() {
   // In response to ping. We just send a throw-away ack to say "im alive"
@@ -146,7 +157,13 @@ int temperatureToInt(double temperature) {
 
 unsigned long windowStartTime;
 boolean inDutyCycleMode;
-boolean heaterIsOn;
+boolean heaterIsOn = LOW;
+
+void setSetPoint(int value) {
+  setpoint = double(value) / 10;
+  Serial << STATMSG << "Set setpoint to " << setpoint << ENDMSG;
+}
+    
 
 void setDutyCycle(int value) {
   // Check bounds
