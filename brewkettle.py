@@ -1,10 +1,11 @@
 import serial
 import numpy as np
 from numpy.random import random_integers
-
-from traits.api import HasTraits, Float, Int, Instance
-from traitsui.api import View, Item, Handler
+from traits.api import HasTraits, Enum, Float, Int, Instance, Array
+from traitsui.api import View, Item, HGroup, spring, Handler
 from pyface.timer.api import Timer
+from chaco.api import Plot, ArrayPlotData
+from chaco.chaco_plot_editor import ChacoPlotItem
 
 
 class FakeSerial():
@@ -24,6 +25,7 @@ class FakeSerial():
 class BrewKettle(HasTraits):
     """ Arduino controlled heatable brew kettle """
 
+    timestamp = Int
     temperature = Float(np.NaN)
     setpoint = Float(np.NaN)
     dutycycle = Int
@@ -117,10 +119,31 @@ class BrewKettle(HasTraits):
                 self.setpoint = float(cmd_list[3])
             else:
                 print line
+        self.timestamp += 1
 
     def _echo_readlines(self):
         for line in self.serial.readlines():
             print line
+
+
+class KettleMonitor(HasTraits):
+    time = Array
+    temperature = Array
+
+    def __init__(self, kettle):
+        super(KettleMonitor, self).__init__()
+        self.kettle = kettle
+
+    def grab_current_value(self):
+        self.time = np.hstack((self.time, kettle.timestamp))
+        self.temperature = np.hstack((self.temperature, kettle.temperature))
+
+    kettle = Instance(BrewKettle)
+    time = Array
+    temperature = Array
+
+    view = View(ChacoPlotItem("time", "temperature"))
+
 
 class DemoHandler(Handler):
     def closed(self, info, is_ok):
@@ -134,13 +157,16 @@ class DemoHandler(Handler):
 
 class Demo(HasTraits):
     kettle = Instance(BrewKettle)
+    monitor = Instance(KettleMonitor)
     timer = Instance(Timer)
     view = View(Item("kettle", style="custom", show_label=False),
+                Item("monitor", style="custom", show_label=False),
                 handler=DemoHandler,
                 resizable=True)
 
     def __init__(self, kettle):
         self.kettle = kettle
+        self.monitor = KettleMonitor(kettle)
 
     def edit_traits(self, *args, **kws):
         # Start up the timer! We should do this only when the demo actually
@@ -151,8 +177,12 @@ class Demo(HasTraits):
     def configure_traits(self, *args, **kws):
         # Start up the timer! We should do this only when the demo actually
         # starts and not when the demo object is created.
-        self.timer = Timer(1000, self.kettle.check_for_serial)
+        self.timer = Timer(1000, self._timer_callback)
         return super(Demo, self).configure_traits(*args, **kws)
+
+    def _timer_callback(self):
+        self.kettle.check_for_serial()
+        self.monitor.grab_current_value()
 
 
 if __name__ == "__main__":
