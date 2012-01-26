@@ -1,10 +1,10 @@
 import serial
-import time
 import numpy as np
-import wx
 
-from traits.api import HasTraits, Float, Int
-from traitsui.api import View, Item
+from traits.api import HasTraits, Float, Int, Instance
+from traitsui.api import View, Item, Handler
+from pyface.timer.api import Timer
+
 
 class FakeSerial():
 
@@ -17,12 +17,17 @@ class FakeSerial():
     def readlines(self):
         return ["Readlines called on dummy"]
 
+
 class BrewKettle(HasTraits):
     """ Arduino controlled heatable brew kettle """
 
     temperature = Float(np.NaN)
     setpoint = Float(np.NaN)
     dutycycle = Int
+
+    view = View(Item(name="temperature"),
+                Item(name="setpoint"),
+                Item(name="dutycycle"))
 
     def __init__(self, port="/dev/tty.usbmodem1a21"):
         if port is not None:
@@ -119,19 +124,40 @@ monitor_view = View(Item(name="temperature"),
                     Item(name="dutycycle"))
 
 
-class MyApp(wx.PySimpleApp):
-    def OnInit(self, *args, **kw):
-        kettle = BrewKettle(None)
-        kettle.edit_traits(view=monitor_view)
-        self.setup_timer(kettle)
-        return True
+class DemoHandler(Handler):
+    def closed(self, info, is_ok):
+        """ Handles a dialog-based user interface being closed by the user.
+        Overridden here to stop the timer once the window is destroyed.
+        """
 
-    def setup_timer(self, kettle):
-        timerId = wx.NewId()
-        self.timer = wx.Timer(self, timerId)
-        self.Bind(wx.EVT_TIMER, kettle.check_for_serial, id=timerId)
-        self.timer.Start(1000.0, wx.TIMER_CONTINUOUS)
+        info.object.timer.Stop()
+        return
+
+
+class Demo(HasTraits):
+    kettle = Instance(BrewKettle)
+    timer = Instance(Timer)
+    view = View(Item("kettle", style="custom", show_label=False),
+                handler=DemoHandler,
+                resizable=True)
+
+    def __init__(self, kettle):
+        self.kettle = kettle
+
+    def edit_traits(self, *args, **kws):
+        # Start up the timer! We should do this only when the demo actually
+        # starts and not when the demo object is created.
+        self.timer = Timer(1000, self.kettle.check_for_serial)
+        return super(Demo, self).edit_traits(*args, **kws)
+
+    def configure_traits(self, *args, **kws):
+        # Start up the timer! We should do this only when the demo actually
+        # starts and not when the demo object is created.
+        self.timer = Timer(1000, self.kettle.check_for_serial)
+        return super(Demo, self).configure_traits(*args, **kws)
+
 
 if __name__ == "__main__":
-    app = MyApp()
-    app.MainLoop()
+    kettle = BrewKettle(None)
+    demo = Demo(kettle)
+    demo.configure_traits()
