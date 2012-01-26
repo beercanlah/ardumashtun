@@ -7,7 +7,7 @@ class BrewKettle():
     """ Arduino controlled heatable brew kettle """
 
     def __init__(self, port="/dev/tty.usbmodem1a21"):
-        self.serial = serial.Serial("/dev/tty.usbmodem1a21",
+        self.serial = serial.Serial(port,
                                     baudrate=57600, timeout=1)
         # Print Arduino ready statement, appears only sometimes..
         self.check_for_serial()
@@ -57,6 +57,12 @@ class BrewKettle():
 
     def set_heater_duty_cycle(self, percent):
         self.serial.write("6," + str(percent) + ";")
+
+    def set_setpoint(self, temperature):
+        int_temperature = int(10 * np.round(temperature,1));
+        cmd = "9," + str(int_temperature) + ";"
+        print cmd
+        self.serial.write(cmd)
 
     def check_for_serial(self):
         lines_received = self.serial.readlines()
