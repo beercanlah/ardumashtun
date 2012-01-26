@@ -8,9 +8,14 @@ filename
 data = np.loadtxt(filename, skiprows=1, delimiter=",")
 time = data[:, 0]
 temperature = data[:, 1]
+dutycycle = data [:, 2]
+setpoint = data [:, 3]
 try:
     plt.clf()
 except:
     pass
-plt.plot(time, temperature)
+plt.plot(time, temperature, "b")
+plt.plot(time, setpoint, "b")
+plt.twinx()
+plt.plot(time, dutycycle, "g")
 plt.show()
