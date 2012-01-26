@@ -18,8 +18,8 @@ class FakeSerial():
 class BrewKettle(HasTraits):
     """ Arduino controlled heatable brew kettle """
 
-    temperature = Float
-    setpoint = Float
+    temperature = Float(np.NaN)
+    setpoint = Float(np.NaN)
     dutycycle = Int
     
     def __init__(self, port="/dev/tty.usbmodem1a21"):
@@ -31,7 +31,6 @@ class BrewKettle(HasTraits):
             
         # Print Arduino ready statement, appears only sometimes..
         self.check_for_serial()
-        self.temperature = np.NaN
 
     def exit(self):
         self.turn_pump_off()
