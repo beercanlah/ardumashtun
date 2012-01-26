@@ -2,13 +2,33 @@ import serial
 import time
 import numpy as np
 
+from traits.api import HasTraits, Float, Int
 
-class BrewKettle():
+class FakeSerial():
+
+    def __init__(self):
+        pass
+
+    def write(self, string):
+        print string
+
+    def readlines(self):
+        return ["Readlines called on dummy"]
+
+class BrewKettle(HasTraits):
     """ Arduino controlled heatable brew kettle """
 
+    temperature = Float
+    setpoint = Float
+    dutycycle = Int
+    
     def __init__(self, port="/dev/tty.usbmodem1a21"):
-        self.serial = serial.Serial(port,
-                                    baudrate=57600, timeout=1)
+        if port is not None:
+            self.serial = serial.Serial(port,
+                                        baudrate=57600, timeout=1)
+        else:
+            self.serial = FakeSerial()
+            
         # Print Arduino ready statement, appears only sometimes..
         self.check_for_serial()
         self.temperature = np.NaN
@@ -28,7 +48,7 @@ class BrewKettle():
         self.serial.write("8;")
         self.check_for_serial()
         return (self.temperature,
-                self.duty_cycle,
+                self.dutycycle,
                 self.setpoint)
 
     def turn_PID_on(self):
@@ -55,7 +75,7 @@ class BrewKettle():
         self.serial.write("6,0;")
         self.check_for_serial()
 
-    def set_heater_duty_cycle(self, percent):
+    def set_heater_dutycycle(self, percent):
         self.serial.write("6," + str(percent) + ";")
 
     def set_setpoint(self, temperature):
@@ -84,7 +104,7 @@ class BrewKettle():
                 print "Temperature received: " + str(self.temperature)
             elif cmd_list[0] is "3":
                 self.temperature = float(cmd_list[1])
-                self.duty_cycle = float(cmd_list[2])
+                self.dutycycle = float(cmd_list[2])
                 self.setpoint = float(cmd_list[3])
             else:
                 print line
@@ -92,3 +112,7 @@ class BrewKettle():
     def _echo_readlines(self):
         for line in self.serial.readlines():
             print line
+
+if __name__ == "__main__":
+    kettle = BrewKettle(None)
+    kettle.configure_traits()
