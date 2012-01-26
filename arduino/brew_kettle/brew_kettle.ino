@@ -249,10 +249,13 @@ void setup() {
   pinMode(pumpPin, OUTPUT);
   pinMode(heaterPin, OUTPUT);
   dutyCycle = 0;
-  setpoint = 47;
+  
+  measureTemperature();
+  setpoint = temperature + 1;
   
   temperaturePID.SetMode(MANUAL);
   temperaturePID.SetOutputLimits(0, 100);
+  temperaturePID.SetSampleTime(windowSize);
   
   Serial.begin(57600);
   cmdMessenger.print_LF_CR();
@@ -263,6 +266,7 @@ void setup() {
   cmdMessenger.attach(6, heater_msg);
   cmdMessenger.attach(7, setPIDonoff_msg);
   cmdMessenger.attach(8, getINOUTSET_msg);
+  cmdMessenger.attach(9, changeSET_msg);
   arduino_ready();
 }
 
