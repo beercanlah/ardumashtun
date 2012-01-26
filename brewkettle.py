@@ -1,5 +1,6 @@
 import serial
 import numpy as np
+from numpy.random import random_integers
 
 from traits.api import HasTraits, Float, Int, Instance
 from traitsui.api import View, Item, Handler
@@ -15,7 +16,9 @@ class FakeSerial():
         print string
 
     def readlines(self):
-        return ["Readlines called on dummy"]
+        temperature = 400 + random_integers(0, 100)
+        return ["Readlines called on dummy",
+                "2," + str(temperature), ";"]
 
 
 class BrewKettle(HasTraits):
@@ -118,11 +121,6 @@ class BrewKettle(HasTraits):
     def _echo_readlines(self):
         for line in self.serial.readlines():
             print line
-
-monitor_view = View(Item(name="temperature"),
-                    Item(name="setpoint"),
-                    Item(name="dutycycle"))
-
 
 class DemoHandler(Handler):
     def closed(self, info, is_ok):
