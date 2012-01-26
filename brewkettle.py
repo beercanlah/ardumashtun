@@ -1,8 +1,10 @@
 import serial
 import time
 import numpy as np
+import wx
 
 from traits.api import HasTraits, Float, Int
+from traitsui.api import View, Item
 
 class FakeSerial():
 
@@ -21,14 +23,14 @@ class BrewKettle(HasTraits):
     temperature = Float(np.NaN)
     setpoint = Float(np.NaN)
     dutycycle = Int
-    
+
     def __init__(self, port="/dev/tty.usbmodem1a21"):
         if port is not None:
             self.serial = serial.Serial(port,
                                         baudrate=57600, timeout=1)
         else:
             self.serial = FakeSerial()
-            
+
         # Print Arduino ready statement, appears only sometimes..
         self.check_for_serial()
 
@@ -78,17 +80,17 @@ class BrewKettle(HasTraits):
         self.serial.write("6," + str(percent) + ";")
 
     def set_setpoint(self, temperature):
-        int_temperature = int(10 * np.round(temperature,1));
+        int_temperature = int(10 * np.round(temperature, 1))
         cmd = "9," + str(int_temperature) + ";"
         print cmd
         self.serial.write(cmd)
 
-    def check_for_serial(self):
+    def check_for_serial(self, *args):
         lines_received = self.serial.readlines()
         for line in lines_received:
             # Strip away CR LF
             line = line.rstrip("\r\n")
-            
+
             # If proper command strip away ;
             # else just echo
             if line[-1] is ";":
@@ -112,6 +114,24 @@ class BrewKettle(HasTraits):
         for line in self.serial.readlines():
             print line
 
+monitor_view = View(Item(name="temperature"),
+                    Item(name="setpoint"),
+                    Item(name="dutycycle"))
+
+
+class MyApp(wx.PySimpleApp):
+    def OnInit(self, *args, **kw):
+        kettle = BrewKettle(None)
+        kettle.edit_traits(view=monitor_view)
+        self.setup_timer(kettle)
+        return True
+
+    def setup_timer(self, kettle):
+        timerId = wx.NewId()
+        self.timer = wx.Timer(self, timerId)
+        self.Bind(wx.EVT_TIMER, kettle.check_for_serial, id=timerId)
+        self.timer.Start(1000.0, wx.TIMER_CONTINUOUS)
+
 if __name__ == "__main__":
-    kettle = BrewKettle(None)
-    kettle.configure_traits()
+    app = MyApp()
+    app.MainLoop()
