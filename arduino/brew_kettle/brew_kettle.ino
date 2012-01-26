@@ -22,7 +22,7 @@ byte slowCount;
 double temperature;
 double setpoint;
 double dutyCycle;
-PID temperaturePID(&temperature, &dutyCycle, &setpoint, 100, 0, 0, DIRECT);
+PID temperaturePID(&temperature, &dutyCycle, &setpoint, 10, 0.11, 0, DIRECT);
   
 const int adcSubstract = 51;
 const int adcMax = 784;
