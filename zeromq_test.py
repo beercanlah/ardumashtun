@@ -1,5 +1,6 @@
 import serial
 import zmq
+import numpy as np
 
 context = zmq.Context()
 socket = context.socket(zmq.REP)
@@ -15,4 +16,4 @@ while True:
     serial.write(message)
     socket.send("1")
 
-
+np.linspace
