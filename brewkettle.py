@@ -1,10 +1,11 @@
 import serial
 import numpy as np
 from numpy.random import random_integers
+from enable.api import ComponentEditor, Component, Window
 from traits.api import HasTraits, Enum, Float, Int, Instance, Array
 from traitsui.api import View, Item, HGroup, spring, Handler
 from pyface.timer.api import Timer
-from chaco.chaco_plot_editor import ChacoPlotItem
+from chaco.api import Plot, ArrayPlotData, OverlayPlotContainer, create_line_plot, LinePlot
 
 
 class FakeSerial():
@@ -14,6 +15,9 @@ class FakeSerial():
 
     def write(self, string):
         print string
+
+    def close(self):
+        pass
 
     def readlines(self):
         temperature = 400 + random_integers(0, 100)
@@ -127,22 +131,34 @@ class BrewKettle(HasTraits):
 
 
 class KettleMonitor(HasTraits):
+    plot = Instance(Plot)
     time = Array
     temperature = Array
 
     def __init__(self, kettle):
         super(KettleMonitor, self).__init__()
         self.kettle = kettle
+        self.temperature_data = ArrayPlotData(time=self.time,
+                                              temperature=self.temperature)
+        plot = Plot(self.temperature_data)
+        plot.plot(("time", "temperature"))
+        self.plot = plot
 
     def grab_current_value(self):
         self.time = np.hstack((self.time, kettle.timestamp))
         self.temperature = np.hstack((self.temperature, kettle.temperature))
 
+    def refresh_plot(self):
+        self.temperature_data.set_data("time", self.time)
+        self.temperature_data.set_data("temperature", self.temperature)
+        self.plot.request_redraw()
+
     kettle = Instance(BrewKettle)
     time = Array
     temperature = Array
 
-    view = View(ChacoPlotItem("time", "temperature"))
+    view = View(Item("plot", editor=ComponentEditor()),
+                resizable=True)
 
 
 class DemoHandler(Handler):
@@ -185,9 +201,10 @@ class Demo(HasTraits):
         self.kettle.get_all()
         self.kettle.check_for_serial()
         self.monitor.grab_current_value()
+        self.monitor.refresh_plot()
 
 
 if __name__ == "__main__":
-    kettle = BrewKettle("/dev/tty.usbmodem1a21")
+    kettle = BrewKettle(None)
     demo = Demo(kettle)
     demo.configure_traits()
