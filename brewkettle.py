@@ -26,6 +26,9 @@ class FakeSerial():
 
 
 class BrewKettleHandler(Handler):
+    def object_dutycycle_to_send_changed(self, info):
+        info.object.set_current_dutycycle()
+
     def object_setpoint_to_send_changed(self, info):
         info.object.set_current_setpoint()
 
@@ -59,7 +62,9 @@ class BrewKettle(HasTraits):
                         editor=TextEditor(enter_set=True, auto_set=False,
                                           evaluate=float)),
                    Item(name="send_setpoint", show_label=False)),
-            HGroup(Item(name="dutycycle_to_send"),
+            HGroup(Item(name="dutycycle_to_send",
+                        editor=TextEditor(enter_set=True, auto_set=False,
+                                          evaluate=float)),
                    Item(name="send_dutycycle", show_label=False))
             )), handler=BrewKettleHandler)
 
@@ -120,6 +125,9 @@ class BrewKettle(HasTraits):
         percent = int(np.round(percent))
         self.serial.write("6," + str(percent) + ";")
 
+    def set_current_dutycycle(self):
+        self.set_heater_dutycycle(self.dutycycle_to_send)        
+
     def set_setpoint(self, temperature):
         int_temperature = int(10 * np.round(temperature, 1))
         cmd = "9," + str(int_temperature) + ";"
@@ -163,7 +171,7 @@ class BrewKettle(HasTraits):
             print line
 
     def _send_dutycycle_fired(self):
-        self.set_heater_dutycycle(self.dutycycle_to_send)
+        self.set_current_dutycycle()
 
     def _send_setpoint_fired(self):
         self.set_current_setpoint()
