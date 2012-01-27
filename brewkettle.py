@@ -33,14 +33,17 @@ class BrewKettle(HasTraits):
     setpoint = Float(np.NaN)
     dutycycle = Float
     PID_controlled = Bool
+    pump_is_on = Bool
 
     view = View(Group(
-        Item(name="timestamp", style="readonly"),
-        Item(name="temperature", style="readonly"),
-        Item(name="setpoint", style="readonly"),
-        Item(name="dutycycle", style="readonly"),
-        Item(name="PID_controlled", style="readonly"),
-        label="Latest information from Brew Kettle"))
+        Item(name="timestamp"),
+        Item(name="temperature"),
+        Item(name="setpoint"),
+        Item(name="dutycycle"),
+        Item(name="PID_controlled"),
+        Item(name="pump_is_on"),
+        label="Latest information from Brew Kettle",
+        style="readonly"))
 
     def __init__(self, port="/dev/tty.usbmodem1a21"):
         if port is not None:
@@ -126,7 +129,8 @@ class BrewKettle(HasTraits):
                 self.temperature = float(cmd_list[2])
                 self.dutycycle = float(cmd_list[3])
                 self.setpoint = float(cmd_list[4])
-                self.PID_controlled = bool(int(cmd_list[6]))
+                self.PID_controlled = bool(int(cmd_list[5]))
+                self.pump_is_on = bool(int(cmd_list[6]))
             else:
                 print line
         self.timestamp += 1
