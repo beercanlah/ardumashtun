@@ -2,7 +2,7 @@ import serial
 import numpy as np
 from numpy.random import random_integers
 from enable.api import ComponentEditor
-from traits.api import HasTraits, Float, Instance, Array
+from traits.api import HasTraits, Float, Instance, Array, Bool
 from traitsui.api import View, Item, Handler, Group
 from pyface.timer.api import Timer
 from chaco.api import Plot, ArrayPlotData
@@ -32,12 +32,14 @@ class BrewKettle(HasTraits):
     temperature = Float(np.NaN)
     setpoint = Float(np.NaN)
     dutycycle = Float
+    PID_controlled = Bool
 
     view = View(Group(
         Item(name="timestamp", style="readonly"),
         Item(name="temperature", style="readonly"),
         Item(name="setpoint", style="readonly"),
         Item(name="dutycycle", style="readonly"),
+        Item(name="PID_controlled", style="readonly"),
         label="Latest information from Brew Kettle"))
 
     def __init__(self, port="/dev/tty.usbmodem1a21"):
@@ -124,6 +126,7 @@ class BrewKettle(HasTraits):
                 self.temperature = float(cmd_list[2])
                 self.dutycycle = float(cmd_list[3])
                 self.setpoint = float(cmd_list[4])
+                self.PID_controlled = bool(int(cmd_list[6]))
             else:
                 print line
         self.timestamp += 1
@@ -198,7 +201,7 @@ class Demo(HasTraits):
     def edit_traits(self, *args, **kws):
         # Start up the timer! We should do this only when the demo actually
         # starts and not when the demo object is created.
-        self.timer = Timer(1000, self.kettle.check_for_serial)
+        self.timer = Timer(1000, self._timer_callback)
         return super(Demo, self).edit_traits(*args, **kws)
 
     def configure_traits(self, *args, **kws):

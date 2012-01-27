@@ -112,7 +112,7 @@ void setPIDonoff_msg() {
 void getGETALL_msg() {
   Serial << STATMSG << "Get Input Output Setpoint msg received" << ENDMSG;
   Serial << GETALLMSG << temperature << "," << dutyCycle << "," \
-	 << setpoint << ENDMSG;
+	 << setpoint << "," << temperaturePID.GetMode() <<  ENDMSG;
 }
 
 void changeSET_msg() {
