@@ -152,6 +152,7 @@ class DemoHandler(Handler):
         """
 
         info.object.timer.Stop()
+        info.object.kettle.exit()
         return
 
 
