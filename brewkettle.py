@@ -4,7 +4,6 @@ from numpy.random import random_integers
 from traits.api import HasTraits, Enum, Float, Int, Instance, Array
 from traitsui.api import View, Item, HGroup, spring, Handler
 from pyface.timer.api import Timer
-from chaco.api import Plot, ArrayPlotData
 from chaco.chaco_plot_editor import ChacoPlotItem
 
 
@@ -28,7 +27,7 @@ class BrewKettle(HasTraits):
     timestamp = Int
     temperature = Float(np.NaN)
     setpoint = Float(np.NaN)
-    dutycycle = Int
+    dutycycle = Float
 
     view = View(Item(name="temperature"),
                 Item(name="setpoint"),
@@ -55,7 +54,7 @@ class BrewKettle(HasTraits):
         self.check_for_serial()
         return self.temperature
 
-    def get_in_out_set(self):
+    def get_all(self):
         self.serial.write("8;")
         self.check_for_serial()
         return (self.temperature,
@@ -114,9 +113,10 @@ class BrewKettle(HasTraits):
                 self.temperature = np.round(int(cmd_list[1]) / 10.0, 1)
                 print "Temperature received: " + str(self.temperature)
             elif cmd_list[0] is "3":
-                self.temperature = float(cmd_list[1])
-                self.dutycycle = float(cmd_list[2])
-                self.setpoint = float(cmd_list[3])
+                self.timestamp = int(cmd_list[1])
+                self.temperature = float(cmd_list[2])
+                self.dutycycle = float(cmd_list[3])
+                self.setpoint = float(cmd_list[4])
             else:
                 print line
         self.timestamp += 1
@@ -181,11 +181,12 @@ class Demo(HasTraits):
         return super(Demo, self).configure_traits(*args, **kws)
 
     def _timer_callback(self):
+        self.kettle.get_all()
         self.kettle.check_for_serial()
         self.monitor.grab_current_value()
 
 
 if __name__ == "__main__":
-    kettle = BrewKettle(None)
+    kettle = BrewKettle("/dev/tty.usbmodem1a21")
     demo = Demo(kettle)
     demo.configure_traits()
