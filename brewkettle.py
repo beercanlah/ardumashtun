@@ -24,7 +24,7 @@ class FakeSerial():
 class BrewKettle(HasTraits):
     """ Arduino controlled heatable brew kettle """
 
-    timestamp = Int
+    timestamp = Float
     temperature = Float(np.NaN)
     setpoint = Float(np.NaN)
     dutycycle = Float
@@ -113,7 +113,7 @@ class BrewKettle(HasTraits):
                 self.temperature = np.round(int(cmd_list[1]) / 10.0, 1)
                 print "Temperature received: " + str(self.temperature)
             elif cmd_list[0] is "3":
-                self.timestamp = int(cmd_list[1])
+                self.timestamp = int(cmd_list[1]) / 1000.0
                 self.temperature = float(cmd_list[2])
                 self.dutycycle = float(cmd_list[3])
                 self.setpoint = float(cmd_list[4])
