@@ -2,7 +2,7 @@ import serial
 import numpy as np
 from numpy.random import random_integers
 from enable.api import ComponentEditor
-from traits.api import HasTraits, Float, Instance, Array, Bool
+from traits.api import HasTraits, Float, Instance, Array, Bool, Button
 from traitsui.api import View, Item, Handler, Group, HGroup
 from pyface.timer.api import Timer
 from chaco.api import Plot, ArrayPlotData
@@ -32,8 +32,10 @@ class BrewKettle(HasTraits):
     temperature = Float(np.NaN)
     setpoint = Float(np.NaN)
     setpoint_to_send = Float
+    send_setpoint = Button
     dutycycle = Float
     dutycycle_to_send = Float
+    send_dutycycle = Button
     PID_controlled = Bool
     pump_is_on = Bool
 
@@ -48,11 +50,14 @@ class BrewKettle(HasTraits):
             label="Latest information from Brew Kettle",
             style="readonly"),
         Group(
-            Item(name="setpoint_to_send"),
-            Item(name="dutycycle_to_send")
+            HGroup(Item(name="setpoint_to_send"),
+                   Item(name="send_setpoint", show_label=False)),
+            HGroup(Item(name="dutycycle_to_send"),
+                   Item(name="send_dutycycle", show_label=False))
             )))
 
     def __init__(self, port="/dev/tty.usbmodem1a21"):
+
         if port is not None:
             self.serial = serial.Serial(port,
                                         baudrate=57600, timeout=0.1)
@@ -105,6 +110,7 @@ class BrewKettle(HasTraits):
         self.check_for_serial()
 
     def set_heater_dutycycle(self, percent):
+        percent = int(np.round(percent))
         self.serial.write("6," + str(percent) + ";")
 
     def set_setpoint(self, temperature):
@@ -145,6 +151,12 @@ class BrewKettle(HasTraits):
     def _echo_readlines(self):
         for line in self.serial.readlines():
             print line
+
+    def _send_dutycycle_fired(self):
+        self.set_heater_dutycycle(self.dutycycle_to_send)
+
+    def _send_setpoint_fired(self):
+        self.set_setpoint(self.setpoint_to_send)
 
 
 class KettleMonitor(HasTraits):
