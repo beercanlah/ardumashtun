@@ -3,7 +3,7 @@ import numpy as np
 from numpy.random import random_integers
 from enable.api import ComponentEditor
 from traits.api import HasTraits, Float, Instance, Array, Bool, Button
-from traitsui.api import View, Item, Handler, Group, HGroup
+from traitsui.api import View, Item, Handler, Group, HGroup, TextEditor
 from pyface.timer.api import Timer
 from chaco.api import Plot, ArrayPlotData
 
@@ -23,6 +23,11 @@ class FakeSerial():
         temperature = 400 + random_integers(0, 100)
         return ["Readlines called on dummy",
                 "2," + str(temperature), ";"]
+
+
+class BrewKettleHandler(Handler):
+    def object_setpoint_to_send_changed(self, info):
+        info.object.set_current_setpoint()
 
 
 class BrewKettle(HasTraits):
@@ -50,11 +55,13 @@ class BrewKettle(HasTraits):
             label="Latest information from Brew Kettle",
             style="readonly"),
         Group(
-            HGroup(Item(name="setpoint_to_send"),
+            HGroup(Item(name="setpoint_to_send",
+                        editor=TextEditor(enter_set=True, auto_set=False,
+                                          evaluate=float)),
                    Item(name="send_setpoint", show_label=False)),
             HGroup(Item(name="dutycycle_to_send"),
                    Item(name="send_dutycycle", show_label=False))
-            )))
+            )), handler=BrewKettleHandler)
 
     def __init__(self, port="/dev/tty.usbmodem1a21"):
 
@@ -119,6 +126,9 @@ class BrewKettle(HasTraits):
         print cmd
         self.serial.write(cmd)
 
+    def set_current_setpoint(self):
+        self.set_setpoint(self.setpoint_to_send)
+
     def check_for_serial(self, *args):
         lines_received = self.serial.readlines()
         for line in lines_received:
@@ -156,7 +166,7 @@ class BrewKettle(HasTraits):
         self.set_heater_dutycycle(self.dutycycle_to_send)
 
     def _send_setpoint_fired(self):
-        self.set_setpoint(self.setpoint_to_send)
+        self.set_current_setpoint()
 
 
 class KettleMonitor(HasTraits):
