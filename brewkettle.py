@@ -5,7 +5,7 @@ from enable.api import ComponentEditor
 from traits.api import HasTraits, Float, Instance, Array, Bool, Button
 from traitsui.api import View, Item, Handler, Group, HGroup, TextEditor
 from pyface.timer.api import Timer
-from chaco.api import Plot, ArrayPlotData
+from chaco.api import Plot, ArrayPlotData, VPlotContainer
 
 
 class FakeSerial():
@@ -195,10 +195,13 @@ class BrewKettle(HasTraits):
 
 
 class KettleMonitor(HasTraits):
-    plot = Instance(Plot)
+    temperature_plot = Instance(Plot)
+    dutycycle_plot = Instance(Plot)
+    plot_container = VPlotContainer()
     time = Array
     temperature = Array
     setpoint = Array
+    dutycycle = Array
 
     def __init__(self, kettle):
         super(KettleMonitor, self).__init__()
@@ -209,7 +212,16 @@ class KettleMonitor(HasTraits):
         plot = Plot(self.temperature_data)
         plot.plot(("time", "temperature"), color="blue")
         plot.plot(("time", "setpoint"), color="green")
-        self.plot = plot
+        self.temperature_plot = plot
+
+        self.dutycycle_data = ArrayPlotData(time=self.time,
+                                            dutycycle=self.dutycycle)
+        plot = Plot(self.dutycycle_data)
+        plot.plot(("time", "dutycycle"), color="blue")
+        self.dutycycle_plot = plot
+        self.plot_container.add(self.dutycycle_plot)
+        self.plot_container.add(self.temperature_plot)
+
 
     def grab_current_value(self):
         self.time = np.hstack((self.time, kettle.timestamp))
@@ -220,14 +232,16 @@ class KettleMonitor(HasTraits):
         self.temperature_data.set_data("time", self.time)
         self.temperature_data.set_data("temperature", self.temperature)
         self.temperature_data.set_data("setpoint", self.setpoint)
-        self.plot.request_redraw()
+        self.dutycycle_data.set_data("time", self.time)
+        self.dutycycle_data.set_data("dutycycle", self.dutycycle)
+        self.plot_container.request_redraw()
 
     kettle = Instance(BrewKettle)
     time = Array
     temperature = Array
 
-    view = View(Group(
-        Item("plot", editor=ComponentEditor(), show_label=False),
+    view = View(Group(Item("plot_container", editor=ComponentEditor(),
+                           show_label=False),
         label="History plots"),
                 resizable=True)
 
