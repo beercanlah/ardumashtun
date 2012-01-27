@@ -1,11 +1,12 @@
 import serial
 import numpy as np
 from numpy.random import random_integers
-from enable.api import ComponentEditor, Component, Window
-from traits.api import HasTraits, Enum, Float, Int, Instance, Array
-from traitsui.api import View, Item, HGroup, spring, Handler
+from enable.api import ComponentEditor
+from traits.api import HasTraits, Float, Instance, Array
+from traitsui.api import View, Item, Handler
 from pyface.timer.api import Timer
-from chaco.api import Plot, ArrayPlotData, OverlayPlotContainer, create_line_plot, LinePlot
+from chaco.api import Plot, ArrayPlotData
+from chaco.tools.api import PanTool, ZoomTool
 
 
 class FakeSerial():
@@ -134,23 +135,31 @@ class KettleMonitor(HasTraits):
     plot = Instance(Plot)
     time = Array
     temperature = Array
+    setpoint = Array
 
     def __init__(self, kettle):
         super(KettleMonitor, self).__init__()
         self.kettle = kettle
         self.temperature_data = ArrayPlotData(time=self.time,
-                                              temperature=self.temperature)
+                                              temperature=self.temperature,
+                                              setpoint=self.setpoint)
         plot = Plot(self.temperature_data)
-        plot.plot(("time", "temperature"))
+        plot.plot(("time", "temperature"), color="blue")
+        plot.plot(("time", "setpoint"), color="green")
+        plot.tools.append(PanTool(component=plot))
+        plot.overlays.append(ZoomTool(component=plot, tool_mode="box",
+                                      always_on=False))
         self.plot = plot
 
     def grab_current_value(self):
         self.time = np.hstack((self.time, kettle.timestamp))
         self.temperature = np.hstack((self.temperature, kettle.temperature))
+        self.setpoint = np.hstack((self.setpoint, kettle.setpoint))
 
     def refresh_plot(self):
         self.temperature_data.set_data("time", self.time)
         self.temperature_data.set_data("temperature", self.temperature)
+        self.temperature_data.set_data("setpoint", self.setpoint)
         self.plot.request_redraw()
 
     kettle = Instance(BrewKettle)
@@ -205,6 +214,6 @@ class Demo(HasTraits):
 
 
 if __name__ == "__main__":
-    kettle = BrewKettle(None)
+    kettle = BrewKettle("/dev/tty.usbmodem1a21")
     demo = Demo(kettle)
     demo.configure_traits()
