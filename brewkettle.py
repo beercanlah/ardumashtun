@@ -44,8 +44,10 @@ class BrewKettle(HasTraits):
     dutycycle = Float
     dutycycle_to_send = Float
     send_dutycycle = Button
-    PID_controlled = Bool
+    pid_controlled = Bool
     pump_is_on = Bool
+    toggle_pump = Button
+    toggle_pid_on_off = Button
 
     view = View(HGroup(
         Group(
@@ -53,7 +55,7 @@ class BrewKettle(HasTraits):
             Item(name="temperature"),
             Item(name="setpoint"),
             Item(name="dutycycle"),
-            Item(name="PID_controlled"),
+            Item(name="pid_controlled"),
             Item(name="pump_is_on"),
             label="Latest information from Brew Kettle",
             style="readonly"),
@@ -65,8 +67,11 @@ class BrewKettle(HasTraits):
             HGroup(Item(name="dutycycle_to_send",
                         editor=TextEditor(enter_set=True, auto_set=False,
                                           evaluate=float)),
-                   Item(name="send_dutycycle", show_label=False))
-            )), handler=BrewKettleHandler)
+                   Item(name="send_dutycycle", show_label=False)),
+            Item(name="toggle_pump", show_label=False),
+            Item(name="toggle_pid_on_off", show_label=False),
+            label="Interact with Brew Kettle")),
+        handler=BrewKettleHandler)
 
     def __init__(self, port="/dev/tty.usbmodem1a21"):
 
@@ -82,7 +87,7 @@ class BrewKettle(HasTraits):
     def exit(self):
         self.turn_pump_off()
         self.turn_heater_off()
-        self.turn_PID_off()
+        self.turn_pid_off()
         self.serial.close()
 
     def get_temperature(self):
@@ -97,11 +102,11 @@ class BrewKettle(HasTraits):
                 self.dutycycle,
                 self.setpoint)
 
-    def turn_PID_on(self):
+    def turn_pid_on(self):
         self.serial.write("7,1;")
         self.check_for_serial()
 
-    def turn_PID_off(self):
+    def turn_pid_off(self):
         self.serial.write("7,0;")
         self.check_for_serial()
 
@@ -160,7 +165,7 @@ class BrewKettle(HasTraits):
                 self.temperature = float(cmd_list[2])
                 self.dutycycle = float(cmd_list[3])
                 self.setpoint = float(cmd_list[4])
-                self.PID_controlled = bool(int(cmd_list[5]))
+                self.pid_controlled = bool(int(cmd_list[5]))
                 self.pump_is_on = bool(int(cmd_list[6]))
             else:
                 print line
@@ -175,6 +180,18 @@ class BrewKettle(HasTraits):
 
     def _send_setpoint_fired(self):
         self.set_current_setpoint()
+
+    def _toggle_pump_fired(self):
+        if self.pump_is_on:
+            self.turn_pump_off()
+        else:
+            self.turn_pump_on()
+
+    def _toggle_pid_on_off_fired(self):
+        if self.pid_controlled:
+            self.turn_pid_off()
+        else:
+            self.turn_pid_on()
 
 
 class KettleMonitor(HasTraits):
