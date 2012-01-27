@@ -58,7 +58,7 @@ messengerCallbackFunction messengerCallbacks[] =
   temp_msg, // 005
   heater_msg, // 006
   setPIDonoff_msg, // 007
-  getGETALL_msg, // 008
+  getall_msg, // 008
   changeSET_msg, // 009
   NULL
 };
@@ -109,7 +109,7 @@ void setPIDonoff_msg() {
   }
 }
 
-void getGETALL_msg() {
+void getall_msg() {
   Serial << STATMSG << "Get Input Output Setpoint msg received" << ENDMSG;
   Serial << GETALLMSG << temperature << "," << dutyCycle << "," \
 	 << setpoint << "," << temperaturePID.GetMode() <<  ENDMSG;
@@ -265,7 +265,7 @@ void setup() {
   cmdMessenger.attach(5, temp_msg);
   cmdMessenger.attach(6, heater_msg);
   cmdMessenger.attach(7, setPIDonoff_msg);
-  cmdMessenger.attach(8, getGETALL_msg);
+  cmdMessenger.attach(8, getall_msg);
   cmdMessenger.attach(9, changeSET_msg);
   arduino_ready();
 }
