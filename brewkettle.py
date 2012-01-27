@@ -3,10 +3,9 @@ import numpy as np
 from numpy.random import random_integers
 from enable.api import ComponentEditor
 from traits.api import HasTraits, Float, Instance, Array
-from traitsui.api import View, Item, Handler
+from traitsui.api import View, Item, Handler, Group
 from pyface.timer.api import Timer
 from chaco.api import Plot, ArrayPlotData
-from chaco.tools.api import PanTool, ZoomTool
 
 
 class FakeSerial():
@@ -34,9 +33,12 @@ class BrewKettle(HasTraits):
     setpoint = Float(np.NaN)
     dutycycle = Float
 
-    view = View(Item(name="temperature"),
-                Item(name="setpoint"),
-                Item(name="dutycycle"))
+    view = View(Group(
+        Item(name="timestamp", style="readonly"),
+        Item(name="temperature", style="readonly"),
+        Item(name="setpoint", style="readonly"),
+        Item(name="dutycycle", style="readonly"),
+        label="Latest information from Brew Kettle"))
 
     def __init__(self, port="/dev/tty.usbmodem1a21"):
         if port is not None:
@@ -157,16 +159,15 @@ class KettleMonitor(HasTraits):
         self.temperature_data.set_data("time", self.time)
         self.temperature_data.set_data("temperature", self.temperature)
         self.temperature_data.set_data("setpoint", self.setpoint)
-        max = np.hstack((self.temperature, self.setpoint)).max()
-        min = np.hstack((self.temperature, self.setpoint)).min()
-
         self.plot.request_redraw()
 
     kettle = Instance(BrewKettle)
     time = Array
     temperature = Array
 
-    view = View(Item("plot", editor=ComponentEditor()),
+    view = View(Group(
+        Item("plot", editor=ComponentEditor(), show_label=False),
+        label="History plots"),
                 resizable=True)
 
 
