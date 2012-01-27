@@ -69,10 +69,10 @@ void pump_msg() {
     char buf[350] = {'\0'};
     cmdMessenger.copyString(buf, 350);
     if (strncmp(buf, "1", 1) == 0) {
-      digitalWrite(pumpPin, HIGH);
+      pumpOn();
     }
     else {
-      digitalWrite(pumpPin, LOW);
+      pumpOff();
     }
   }
 }
@@ -158,6 +158,7 @@ int temperatureToInt(double temperature) {
 unsigned long windowStartTime;
 boolean inDutyCycleMode;
 boolean heaterIsOn = LOW;
+boolean pumpIsOn = LOW;
 
 void setSetPoint(int value) {
   setpoint = double(value) / 10;
@@ -180,7 +181,7 @@ void setDutyCycle(int value) {
 void heaterOn() {
   if (!heaterIsOn) {
     digitalWrite(heaterPin, HIGH);
-    Serial << STATMSG << "Turning heater on" << dutyCycle << ENDMSG;
+    Serial << STATMSG << "Turned heater on" << dutyCycle << ENDMSG;
   }
   heaterIsOn = HIGH;
 }
@@ -188,10 +189,28 @@ void heaterOn() {
 void heaterOff() {
   if (heaterIsOn) {
     digitalWrite(heaterPin, LOW);
-    Serial << STATMSG << "Turning heater off" << dutyCycle << ENDMSG;
+    Serial << STATMSG << "Turned heater off" << dutyCycle << ENDMSG;
   }
   heaterIsOn = LOW;
 }
+
+void pumpOn() {
+  if (!pumpIsOn) {
+    digitalWrite(pumpPin, HIGH);
+    Serial << STATMSG << "Turned pump on" << ENDMSG;
+  }
+  pumpIsOn = HIGH;
+}
+
+void pumpOff() {
+  if (!pumpIsOn) {
+    digitalWrite(pumpPin, LOW);
+    Serial << STATMSG << "Turned pump off" << ENDMSG;
+  }
+  pumpIsOn = LOW;
+}
+
+
 // 30 sec
 const unsigned long windowSize = 10000;
 
