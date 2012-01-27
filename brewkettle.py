@@ -3,7 +3,7 @@ import numpy as np
 from numpy.random import random_integers
 from enable.api import ComponentEditor
 from traits.api import HasTraits, Float, Instance, Array, Bool
-from traitsui.api import View, Item, Handler, Group
+from traitsui.api import View, Item, Handler, Group, HGroup
 from pyface.timer.api import Timer
 from chaco.api import Plot, ArrayPlotData
 
@@ -31,19 +31,26 @@ class BrewKettle(HasTraits):
     timestamp = Float
     temperature = Float(np.NaN)
     setpoint = Float(np.NaN)
+    setpoint_to_send = Float
     dutycycle = Float
+    dutycycle_to_send = Float
     PID_controlled = Bool
     pump_is_on = Bool
 
-    view = View(Group(
-        Item(name="timestamp"),
-        Item(name="temperature"),
-        Item(name="setpoint"),
-        Item(name="dutycycle"),
-        Item(name="PID_controlled"),
-        Item(name="pump_is_on"),
-        label="Latest information from Brew Kettle",
-        style="readonly"))
+    view = View(HGroup(
+        Group(
+            Item(name="timestamp"),
+            Item(name="temperature"),
+            Item(name="setpoint"),
+            Item(name="dutycycle"),
+            Item(name="PID_controlled"),
+            Item(name="pump_is_on"),
+            label="Latest information from Brew Kettle",
+            style="readonly"),
+        Group(
+            Item(name="setpoint_to_send"),
+            Item(name="dutycycle_to_send")
+            )))
 
     def __init__(self, port="/dev/tty.usbmodem1a21"):
         if port is not None:
