@@ -41,7 +41,7 @@ class BrewKettle(HasTraits):
     def __init__(self, port="/dev/tty.usbmodem1a21"):
         if port is not None:
             self.serial = serial.Serial(port,
-                                        baudrate=57600, timeout=0.5)
+                                        baudrate=57600, timeout=0.1)
         else:
             self.serial = FakeSerial()
 
@@ -146,9 +146,6 @@ class KettleMonitor(HasTraits):
         plot = Plot(self.temperature_data)
         plot.plot(("time", "temperature"), color="blue")
         plot.plot(("time", "setpoint"), color="green")
-        plot.tools.append(PanTool(component=plot))
-        plot.overlays.append(ZoomTool(component=plot, tool_mode="box",
-                                      always_on=False))
         self.plot = plot
 
     def grab_current_value(self):
@@ -160,6 +157,9 @@ class KettleMonitor(HasTraits):
         self.temperature_data.set_data("time", self.time)
         self.temperature_data.set_data("temperature", self.temperature)
         self.temperature_data.set_data("setpoint", self.setpoint)
+        max = np.hstack((self.temperature, self.setpoint)).max()
+        min = np.hstack((self.temperature, self.setpoint)).min()
+
         self.plot.request_redraw()
 
     kettle = Instance(BrewKettle)
