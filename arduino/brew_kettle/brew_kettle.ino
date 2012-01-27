@@ -42,12 +42,12 @@ enum
   kCOMM_ERROR = 000, 
   kSTATUS = 001,
   kTEMPERATURE = 002, 
-  kINOUTSET = 003,
+  kGETALL = 003,
   kSEND_CMDS_END, // Mustnt delete this line
 };
 
-#define STATMSG "1,"
-#define INOUTSETMSG "3,"
+#define STATMSG "1," << currentMillis << ","
+#define GETALLMSG "3," << currentMillis << ","
 #define ENDMSG ";\r\n"
 
 // Commands we send from the PC and want to recieve on the Arduino.
@@ -58,7 +58,7 @@ messengerCallbackFunction messengerCallbacks[] =
   temp_msg, // 005
   heater_msg, // 006
   setPIDonoff_msg, // 007
-  getINOUTSET_msg, // 008
+  getGETALL_msg, // 008
   changeSET_msg, // 009
   NULL
 };
@@ -109,9 +109,9 @@ void setPIDonoff_msg() {
   }
 }
 
-void getINOUTSET_msg() {
+void getGETALL_msg() {
   Serial << STATMSG << "Get Input Output Setpoint msg received" << ENDMSG;
-  Serial << INOUTSETMSG << temperature << "," << dutyCycle << "," \
+  Serial << GETALLMSG << temperature << "," << dutyCycle << "," \
 	 << setpoint << ENDMSG;
 }
 
@@ -265,7 +265,7 @@ void setup() {
   cmdMessenger.attach(5, temp_msg);
   cmdMessenger.attach(6, heater_msg);
   cmdMessenger.attach(7, setPIDonoff_msg);
-  cmdMessenger.attach(8, getINOUTSET_msg);
+  cmdMessenger.attach(8, getGETALL_msg);
   cmdMessenger.attach(9, changeSET_msg);
   arduino_ready();
 }
