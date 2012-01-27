@@ -22,7 +22,9 @@ byte slowCount;
 double temperature;
 double setpoint;
 double dutyCycle;
-PID temperaturePID(&temperature, &dutyCycle, &setpoint, 10, 0.11, 0, DIRECT);
+double pValue = 10;
+double iValue = 0.11;
+PID temperaturePID(&temperature, &dutyCycle, &setpoint, pValue, iValue, 0, DIRECT);
   
 const int adcSubstract = 51;
 const int adcMax = 784;
@@ -65,6 +67,8 @@ messengerCallbackFunction messengerCallbacks[] =
   setPIDonoff_msg, // 007
   getall_msg, // 008
   changeSET_msg, // 009
+  setP_msg, // 010
+  setI_msg, // 011  
   NULL
 };
 
@@ -118,7 +122,7 @@ void getall_msg() {
   Serial << STATMSG << "Get Input Output Setpoint msg received" << ENDMSG;
   Serial << GETALLMSG << temperature << "," << dutyCycle << "," \
 	 << setpoint << "," << temperaturePID.GetMode() \
-	 << "," << pumpIsOn <<  ENDMSG;
+	 << "," << pumpIsOn << "," << pValue << "," << iValue  << "," << ENDMSG;
 }
 
 void changeSET_msg() {
@@ -131,6 +135,26 @@ void changeSET_msg() {
     setSetPoint(atoi(buf));
   }
 }
+
+void setP_msg() {
+  while (cmdMessenger.available()) {
+    char buf[350] = {'\0'};
+    cmdMessenger.copyString(buf, 350);
+    // Its of the form int, where int is percent
+    // duty cycle
+    setPValue(atoi(buf));
+  }
+}
+
+void setI_msg() {
+  while (cmdMessenger.available()) {
+    char buf[350] = {'\0'};
+    cmdMessenger.copyString(buf, 350);
+    // Its of the form int, where int is percent
+    // duty cycle
+    setIValue(atoi(buf));
+  }
+}    
 
 void arduino_ready() {
   // In response to ping. We just send a throw-away ack to say "im alive"
@@ -177,6 +201,18 @@ void setDutyCycle(int value) {
   }
   Serial << STATMSG << "Set duty cycle to " << value << ENDMSG;
   dutyCycle = double(value);
+}
+
+void setPValue(int value) {
+  pValue = double(value) / 1000;
+  Serial << STATMSG << "Set P value to " << pValue << ENDMSG;
+  temperaturePID.SetTunings(pValue, iValue, 0);
+}
+
+void setIValue(int value) {
+  iValue = double(value) / 1000;
+  Serial << STATMSG << "Set P value to " << iValue << ENDMSG;
+  temperaturePID.SetTunings(pValue, iValue, 0);
 }
     
 void heaterOn() {
@@ -287,6 +323,8 @@ void setup() {
   cmdMessenger.attach(7, setPIDonoff_msg);
   cmdMessenger.attach(8, getall_msg);
   cmdMessenger.attach(9, changeSET_msg);
+  cmdMessenger.attach(10, setP_msg);
+  cmdMessenger.attach(11, setI_msg);
   arduino_ready();
 }
 

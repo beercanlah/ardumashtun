@@ -32,6 +32,12 @@ class BrewKettleHandler(Handler):
     def object_setpoint_to_send_changed(self, info):
         info.object.set_current_setpoint()
 
+    def object_p_value_to_send_changed(self, info):
+        info.object.set_current_p_value()
+
+    def object_i_value_to_send_changed(self, info):
+        info.object.set_current_i_value()
+
 
 class BrewKettle(HasTraits):
     """ Arduino controlled heatable brew kettle """
@@ -48,6 +54,12 @@ class BrewKettle(HasTraits):
     pump_is_on = Bool
     toggle_pump = Button
     toggle_pid_on_off = Button
+    p_value = Float
+    p_value_to_send = Float
+    send_p_value = Button
+    i_value = Float
+    i_value_to_send = Float
+    send_i_value = Button
 
     view = View(HGroup(
         Group(
@@ -56,6 +68,8 @@ class BrewKettle(HasTraits):
             Item(name="setpoint"),
             Item(name="dutycycle"),
             Item(name="pid_controlled"),
+            Item(name="p_value"),
+            Item(name="i_value"),
             Item(name="pump_is_on"),
             label="Latest information from Brew Kettle",
             style="readonly"),
@@ -68,6 +82,14 @@ class BrewKettle(HasTraits):
                         editor=TextEditor(enter_set=True, auto_set=False,
                                           evaluate=float)),
                    Item(name="send_dutycycle", show_label=False)),
+            HGroup(Item(name="p_value_to_send",
+                        editor=TextEditor(enter_set=True, auto_set=False,
+                                          evaluate=float)),
+                   Item(name="send_p_value", show_label=False)),
+            HGroup(Item(name="i_value_to_send",
+                        editor=TextEditor(enter_set=True, auto_set=False,
+                                          evaluate=float)),
+                   Item(name="send_i_value", show_label=False)),
             Item(name="toggle_pump", show_label=False),
             Item(name="toggle_pid_on_off", show_label=False),
             label="Interact with Brew Kettle")),
@@ -126,12 +148,26 @@ class BrewKettle(HasTraits):
         self.serial.write("6,0;")
         self.check_for_serial()
 
+    def set_p_value(self, value):
+        int_value = int(np.round(1000 * value))
+        self.serial.write("10," + str(int_value) + ";")
+
+    def set_current_p_value(self):
+        self.set_p_value(self.p_value_to_send)
+
+    def set_i_value(self, value):
+        int_value = int(np.round(1000 * value))
+        self.serial.write("11," + str(int_value) + ";")
+
+    def set_current_i_value(self):
+        self.set_i_value(self.i_value_to_send)
+
     def set_heater_dutycycle(self, percent):
         percent = int(np.round(percent))
         self.serial.write("6," + str(percent) + ";")
 
     def set_current_dutycycle(self):
-        self.set_heater_dutycycle(self.dutycycle_to_send)        
+        self.set_heater_dutycycle(self.dutycycle_to_send)
 
     def set_setpoint(self, temperature):
         int_temperature = int(10 * np.round(temperature, 1))
@@ -167,6 +203,8 @@ class BrewKettle(HasTraits):
                 self.setpoint = float(cmd_list[4])
                 self.pid_controlled = bool(int(cmd_list[5]))
                 self.pump_is_on = bool(int(cmd_list[6]))
+                self.p_value = float(cmd_list[7])
+                self.i_value = float(cmd_list[8])
             else:
                 print line
         self.timestamp += 1
@@ -221,7 +259,6 @@ class KettleMonitor(HasTraits):
         self.dutycycle_plot = plot
         self.plot_container.add(self.dutycycle_plot)
         self.plot_container.add(self.temperature_plot)
-
 
     def grab_current_value(self):
         self.time = np.hstack((self.time, kettle.timestamp))
