@@ -36,7 +36,7 @@ class BrewKettle(HasTraits):
     def __init__(self, port="/dev/tty.usbmodem1a21"):
         if port is not None:
             self.serial = serial.Serial(port,
-                                        baudrate=57600, timeout=1)
+                                        baudrate=57600, timeout=0.5)
         else:
             self.serial = FakeSerial()
 
