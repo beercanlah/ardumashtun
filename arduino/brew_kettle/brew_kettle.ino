@@ -105,7 +105,7 @@ void heater_msg() {
 }
 
 void setPIDonoff_msg() {
-  Serial << STATMSG << "Set PID on off msg received" << ENDMSG;
+  /* Serial << STATMSG << "Set PID on off msg received" << ENDMSG; */
   while (cmdMessenger.available()) {
     char buf[350] = {'\0'};
     cmdMessenger.copyString(buf, 350);
@@ -119,10 +119,10 @@ void setPIDonoff_msg() {
 }
 
 void getall_msg() {
-  Serial << STATMSG << "All parameters requested" << ENDMSG;
+  /* Serial << STATMSG << "All parameters requested" << ENDMSG; */
   Serial << GETALLMSG << temperature << "," << dutyCycle << "," \
 	 << setpoint << "," << temperaturePID.GetMode() \
-	 << "," << pumpIsOn << "," << pValue << "," << iValue  << "," << ENDMSG;
+	 << "," << pumpIsOn << "," << pValue << "," << iValue << ENDMSG;
 }
 
 void changeSET_msg() {
@@ -187,7 +187,7 @@ int temperatureToInt(double temperature) {
 
 void setSetPoint(int value) {
   setpoint = double(value) / 10;
-  Serial << STATMSG << "Set setpoint to " << setpoint << ENDMSG;
+  /* Serial << STATMSG << "Set setpoint to " << setpoint << ENDMSG; */
 }
     
 void setDutyCycle(int value) {
@@ -198,26 +198,26 @@ void setDutyCycle(int value) {
   if (value < 0) {
     value = 0;
   }
-  Serial << STATMSG << "Set duty cycle to " << value << ENDMSG;
+  /* Serial << STATMSG << "Set duty cycle to " << value << ENDMSG; */
   dutyCycle = double(value);
 }
 
 void setPValue(int value) {
   pValue = double(value) / 1000;
-  Serial << STATMSG << "Set P value to " << pValue << ENDMSG;
+  /* Serial << STATMSG << "Set P value to " << pValue << ENDMSG; */
   temperaturePID.SetTunings(pValue, iValue, 0);
 }
 
 void setIValue(int value) {
   iValue = double(value) / 1000;
-  Serial << STATMSG << "Set P value to " << iValue << ENDMSG;
+  /* Serial << STATMSG << "Set I value to " << iValue << ENDMSG; */
   temperaturePID.SetTunings(pValue, iValue, 0);
 }
     
 void heaterOn() {
   if (!heaterIsOn) {
     digitalWrite(heaterPin, HIGH);
-    Serial << STATMSG << "Turned heater on" << dutyCycle << ENDMSG;
+    /* Serial << STATMSG << "Turned heater on" << dutyCycle << ENDMSG; */
   }
   heaterIsOn = HIGH;
 }
@@ -225,7 +225,7 @@ void heaterOn() {
 void heaterOff() {
   if (heaterIsOn) {
     digitalWrite(heaterPin, LOW);
-    Serial << STATMSG << "Turned heater off" << dutyCycle << ENDMSG;
+    /* Serial << STATMSG << "Turned heater off" << dutyCycle << ENDMSG; */
   }
   heaterIsOn = LOW;
 }
@@ -233,7 +233,7 @@ void heaterOff() {
 void pumpOn() {
   if (!pumpIsOn) {
     digitalWrite(pumpPin, HIGH);
-    Serial << STATMSG << "Turned pump on" << ENDMSG;
+    /* Serial << STATMSG << "Turned pump on" << ENDMSG; */
   }
   pumpIsOn = HIGH;
 }
@@ -241,7 +241,7 @@ void pumpOn() {
 void pumpOff() {
   if (pumpIsOn) {
     digitalWrite(pumpPin, LOW);
-    Serial << STATMSG << "Turned pump off" << ENDMSG;
+    /* Serial << STATMSG << "Turned pump off" << ENDMSG; */
   }
   pumpIsOn = LOW;
 }
