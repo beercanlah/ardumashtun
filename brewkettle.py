@@ -157,7 +157,8 @@ class BrewKettle(HasTraits):
 
     def set_i_value(self, value):
         int_value = int(np.round(1000 * value))
-        self.serial.write("11," + str(int_value) + ";")
+        cmd = "11," + str(int_value) + ";"
+        self.serial.write(cmd)
 
     def set_current_i_value(self):
         self.set_i_value(self.i_value_to_send)
@@ -172,7 +173,6 @@ class BrewKettle(HasTraits):
     def set_setpoint(self, temperature):
         int_temperature = int(10 * np.round(temperature, 1))
         cmd = "9," + str(int_temperature) + ";"
-        print cmd
         self.serial.write(cmd)
 
     def set_current_setpoint(self):
@@ -219,6 +219,12 @@ class BrewKettle(HasTraits):
     def _send_setpoint_fired(self):
         self.set_current_setpoint()
 
+    def _send_p_value_fired(self):
+        self.set_current_p_value()
+
+    def _send_i_value_fired(self):
+        self.set_current_i_value()
+
     def _toggle_pump_fired(self):
         if self.pump_is_on:
             self.turn_pump_off()
@@ -264,6 +270,7 @@ class KettleMonitor(HasTraits):
         self.time = np.hstack((self.time, kettle.timestamp))
         self.temperature = np.hstack((self.temperature, kettle.temperature))
         self.setpoint = np.hstack((self.setpoint, kettle.setpoint))
+        self.dutycycle = np.hstack((self.dutycycle, kettle.dutycycle))
 
     def refresh_plot(self):
         self.temperature_data.set_data("time", self.time)
