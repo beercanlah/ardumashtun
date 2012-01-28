@@ -7,6 +7,9 @@ from traitsui.api import View, Item, Handler, Group, HGroup, TextEditor
 from pyface.timer.api import Timer
 from chaco.api import Plot, ArrayPlotData, VPlotContainer
 
+def float_to_str(float):
+    return "{0:0.2e}".format(float)
+
 
 class FakeSerial():
 
@@ -149,15 +152,15 @@ class BrewKettle(HasTraits):
         self.check_for_serial()
 
     def set_p_value(self, value):
-        int_value = int(np.round(1000 * value))
-        self.serial.write("10," + str(int_value) + ";")
+        value_str = float_to_str(value)
+        self.serial.write("10," + value_str + ";")
 
     def set_current_p_value(self):
         self.set_p_value(self.p_value_to_send)
 
     def set_i_value(self, value):
-        int_value = int(np.round(1000 * value))
-        cmd = "11," + str(int_value) + ";"
+        value_str = float_to_str(value)
+        cmd = "11," + value_str + ";"
         self.serial.write(cmd)
 
     def set_current_i_value(self):

@@ -123,6 +123,7 @@ void getall_msg() {
   Serial << GETALLMSG << temperature << "," << dutyCycle << "," \
 	 << setpoint << "," << temperaturePID.GetMode() \
 	 << "," << pumpIsOn << "," << pValue << "," << iValue << ENDMSG;
+  delay(10);
 }
 
 void changeSET_msg() {
@@ -142,7 +143,7 @@ void setP_msg() {
     cmdMessenger.copyString(buf, 350);
     // Its of the form int, where int is percent
     // duty cycle
-    setPValue(atoi(buf));
+    setPValue(atof(buf));
   }
 }
 
@@ -152,7 +153,7 @@ void setI_msg() {
     cmdMessenger.copyString(buf, 350);
     // Its of the form int, where int is percent
     // duty cycle
-    setIValue(atoi(buf));
+    setIValue(atof(buf));
   }
 }    
 
@@ -202,15 +203,15 @@ void setDutyCycle(int value) {
   dutyCycle = double(value);
 }
 
-void setPValue(int value) {
-  pValue = double(value) / 1000;
-  /* Serial << STATMSG << "Set P value to " << pValue << ENDMSG; */
+void setPValue(double value) {
+  pValue = value;
+  Serial << STATMSG << "Set P value to " << pValue << ENDMSG;
   temperaturePID.SetTunings(pValue, iValue, 0);
 }
 
-void setIValue(int value) {
-  iValue = double(value) / 1000;
-  /* Serial << STATMSG << "Set I value to " << iValue << ENDMSG; */
+void setIValue(double value) {
+  iValue = value;
+  Serial << STATMSG << "Set I value to " << iValue << ENDMSG;
   temperaturePID.SetTunings(pValue, iValue, 0);
 }
     
@@ -295,7 +296,6 @@ void controlHeater() {
     else {
       heaterOff();
     }
-    
     inDutyCycleMode = HIGH;
   }
 }
