@@ -119,14 +119,14 @@ void setPIDonoff_msg() {
 }
 
 void getall_msg() {
-  Serial << STATMSG << "Get Input Output Setpoint msg received" << ENDMSG;
+  Serial << STATMSG << "All parameters requested" << ENDMSG;
   Serial << GETALLMSG << temperature << "," << dutyCycle << "," \
 	 << setpoint << "," << temperaturePID.GetMode() \
 	 << "," << pumpIsOn << "," << pValue << "," << iValue  << "," << ENDMSG;
 }
 
 void changeSET_msg() {
-  /* Serial << STATMSG << "Change set msg received" << ENDMSG; */
+  /* Serial << STATMSG << "Change in setpoint requested" << ENDMSG; */
   while (cmdMessenger.available()) {
     char buf[350] = {'\0'};
     cmdMessenger.copyString(buf, 350);
@@ -190,7 +190,6 @@ void setSetPoint(int value) {
   Serial << STATMSG << "Set setpoint to " << setpoint << ENDMSG;
 }
     
-
 void setDutyCycle(int value) {
   // Check bounds
   if (value > 100) {
@@ -240,7 +239,7 @@ void pumpOn() {
 }
 
 void pumpOff() {
-  if (!pumpIsOn) {
+  if (pumpIsOn) {
     digitalWrite(pumpPin, LOW);
     Serial << STATMSG << "Turned pump off" << ENDMSG;
   }
