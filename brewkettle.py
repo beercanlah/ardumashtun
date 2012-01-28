@@ -183,6 +183,7 @@ class BrewKettle(HasTraits):
         for line in lines_received:
             # Strip away CR LF
             line = line.rstrip("\r\n")
+            print line
 
             # If proper command strip away ;
             # else just echo
@@ -267,10 +268,12 @@ class KettleMonitor(HasTraits):
         self.plot_container.add(self.temperature_plot)
 
     def grab_current_value(self):
-        self.time = np.hstack((self.time, kettle.timestamp))
-        self.temperature = np.hstack((self.temperature, kettle.temperature))
-        self.setpoint = np.hstack((self.setpoint, kettle.setpoint))
-        self.dutycycle = np.hstack((self.dutycycle, kettle.dutycycle))
+        current_timestamp = kettle.timestamp
+        if current_timestamp > self.time[-1]:
+            self.time = np.hstack((self.time, kettle.timestamp))
+            self.temperature = np.hstack((self.temperature, kettle.temperature))
+            self.setpoint = np.hstack((self.setpoint, kettle.setpoint))
+            self.dutycycle = np.hstack((self.dutycycle, kettle.dutycycle))
 
     def refresh_plot(self):
         self.temperature_data.set_data("time", self.time)
