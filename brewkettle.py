@@ -2,10 +2,11 @@ import serial
 import numpy as np
 from numpy.random import random_integers
 from enable.api import ComponentEditor
-from traits.api import HasTraits, Float, Instance, Array, Bool, Button
+from traits.api import HasTraits, Float, Instance, Array, Bool, Button, Str
 from traitsui.api import View, Item, Handler, Group, HGroup, TextEditor
 from pyface.timer.api import Timer
 from chaco.api import Plot, ArrayPlotData, VPlotContainer
+
 
 def float_to_str(float):
     return "{0:0.2e}".format(float)
@@ -26,6 +27,23 @@ class FakeSerial():
         temperature = 400 + random_integers(0, 100)
         return ["Readlines called on dummy",
                 "2," + str(temperature), ";"]
+
+
+class SendableValue(HasTraits):
+    name = Str
+    value = Float
+    send = Button
+
+    def __init__(self, name):
+        super(SendableValue, self).__init__()
+        self.name = name
+
+    view = View(HGroup(Item(name="name", style="readonly"),
+                       Item(name="value", show_label=False,
+                            editor=TextEditor(enter_set=True,
+                                              auto_set=False,
+                                              evaluate=float)),
+                       Item(name="send", show_label=False)))
 
 
 class BrewKettleHandler(Handler):
