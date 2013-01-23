@@ -1,15 +1,45 @@
 import serial
+from serial.tools.list_ports import comports
 import numpy as np
 from numpy.random import random_integers
 from enable.api import ComponentEditor
-from traits.api import HasTraits, Float, Instance, Array, Bool, Button, Str
-from traitsui.api import View, Item, Handler, Group, HGroup, TextEditor
+from traits.api import HasTraits, Float, Instance, Array, Bool, \
+    Button, String, Str, List, Event
+from traitsui.api import View, Item, Handler, Group, HGroup, TextEditor, \
+    VGroup
+from traitsui.api import View, Group, Item, EnumEditor, \
+    OKButton, CancelButton, ButtonEditor
 from pyface.timer.api import Timer
 from chaco.api import Plot, ArrayPlotData, VPlotContainer
 
 
 def float_to_str(float):
     return "{0:0.2e}".format(float)
+
+
+class ComportContainer(HasTraits):
+    '''
+    Class that represents the available comports on a system
+    '''
+
+    comports = List
+    selected_port = String
+
+    def __init__(self):
+        ports = comports()
+        self.comports = []
+        # Seems to return list on tuples on mac
+        for inner in ports:
+            for string in inner:
+                self.comports.append(string)
+
+    traits_view = View(
+        Group(
+            Item(name='selected_port',
+                 editor = EnumEditor(name="comports")
+                 )
+            ),
+        buttons=[OKButton, CancelButton])
 
 
 class FakeSerial():
@@ -117,7 +147,9 @@ class BrewKettle(HasTraits):
         handler=BrewKettleHandler)
 
     def __init__(self, port="/dev/tty.usbmodem1a21"):
+        self.serial = FakeSerial()
 
+    def set_serial_port(self, port):
         if port is not None:
             self.serial = serial.Serial(port,
                                         baudrate=57600, timeout=0.1)
@@ -331,7 +363,13 @@ class Demo(HasTraits):
     kettle = Instance(BrewKettle)
     monitor = Instance(KettleMonitor)
     timer = Instance(Timer)
+    ports = Instance(ComportContainer)
+
+    com_button = Button("Start / Stop com")
+
     view = View(Item("kettle", style="custom", show_label=False),
+                HGroup(Item("ports", style="custom", show_label=False),
+                       Item("com_button", show_label=False)),
                 Item("monitor", style="custom", show_label=False),
                 handler=DemoHandler,
                 resizable=True)
@@ -339,18 +377,19 @@ class Demo(HasTraits):
     def __init__(self, kettle):
         self.kettle = kettle
         self.monitor = KettleMonitor(kettle)
+        self.ports = ComportContainer()
 
-    def edit_traits(self, *args, **kws):
-        # Start up the timer! We should do this only when the demo actually
-        # starts and not when the demo object is created.
-        self.timer = Timer(1000, self._timer_callback)
-        return super(Demo, self).edit_traits(*args, **kws)
+    # def edit_traits(self, *args, **kws):
+    #     # Start up the timer! We should do this only when the demo actually
+    #     # starts and not when the demo object is created.
+    #     self.timer = Timer(1000, self._timer_callback)
+    #     return super(Demo, self).edit_traits(*args, **kws)
 
-    def configure_traits(self, *args, **kws):
-        # Start up the timer! We should do this only when the demo actually
-        # starts and not when the demo object is created.
-        self.timer = Timer(1000, self._timer_callback)
-        return super(Demo, self).configure_traits(*args, **kws)
+    # def configure_traits(self, *args, **kws):
+    #     # Start up the timer! We should do this only when the demo actually
+    #     # starts and not when the demo object is created.
+    #     self.timer = Timer(1000, self._timer_callback)
+    #     return super(Demo, self).configure_traits(*args, **kws)
 
     def _timer_callback(self):
         self.kettle.get_all()
@@ -358,8 +397,12 @@ class Demo(HasTraits):
         self.monitor.grab_current_value()
         self.monitor.refresh_plot()
 
+    def _com_button_fired(self):
+        self.kettle.set_serial_port(self.ports.selected_port)
+        self.timer = Timer(1000, self._timer_callback)
+
 
 if __name__ == "__main__":
-    kettle = BrewKettle("/dev/tty.usbmodem1a21")
+    kettle = BrewKettle("/dev/tty.usbmodem1411")
     demo = Demo(kettle)
     demo.configure_traits()
