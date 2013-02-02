@@ -365,7 +365,7 @@ class Demo(HasTraits):
     timer = Instance(Timer)
     ports = Instance(ComportContainer)
 
-    com_button = Button("Start / Stop com")
+    com_button = Button("Start communication")
 
     view = View(Item("kettle", style="custom", show_label=False),
                 HGroup(Item("ports", style="custom", show_label=False),
