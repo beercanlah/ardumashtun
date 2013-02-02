@@ -1,5 +1,6 @@
 import serial
 from serial.tools.list_ports import comports
+import os
 import numpy as np
 from numpy.random import random_integers
 from enable.api import ComponentEditor
@@ -16,6 +17,23 @@ from chaco.api import Plot, ArrayPlotData, VPlotContainer
 def float_to_str(float):
     return "{0:0.2e}".format(float)
 
+def list_serial_ports():
+    # Windows
+    if os.name == 'nt':
+        # Scan for available ports.
+        available = []
+        for i in range(256):
+            try:
+                s = serial.Serial(i)
+                available.append('COM'+str(i + 1))
+                s.close()
+            except serial.SerialException:
+                pass
+        return available
+    else:
+        # Mac / Linux
+        return [port[0] for port in comports()]
+
 
 class ComportContainer(HasTraits):
     '''
@@ -26,12 +44,8 @@ class ComportContainer(HasTraits):
     selected_port = String
 
     def __init__(self):
-        ports = comports()
-        self.comports = []
-        # Seems to return list on tuples on mac
-        for inner in ports:
-            for string in inner:
-                self.comports.append(string)
+        self.comports = list_serial_ports()
+
 
     traits_view = View(
         Group(
