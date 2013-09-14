@@ -45,6 +45,7 @@ class ComportContainer(HasTraits):
 
     def __init__(self):
         self.comports = list_serial_ports()
+        self.comports.append('Fake')
 
 
     traits_view = View(
@@ -412,7 +413,10 @@ class Demo(HasTraits):
         self.monitor.refresh_plot()
 
     def _com_button_fired(self):
-        self.kettle.set_serial_port(self.ports.selected_port)
+        if self.ports.selected_port is 'Fake':
+            self.kettle.set_serial_port(None)
+        else:
+            self.kettle.set_serial_port(self.ports.selected_port)
         self.timer = Timer(1000, self._timer_callback)
 
 
