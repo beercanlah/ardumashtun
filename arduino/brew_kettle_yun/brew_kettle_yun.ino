@@ -1,6 +1,3 @@
-// Get it from https://github.com/dreamcat4/CmdMessenger
-#include <CmdMessenger.h>
-
 // Get it from https://github.com/br3ttb/Arduino-PID-Library
 #include <PID_v1.h>
 
@@ -256,19 +253,6 @@ void fullstatusCommand(YunClient client) {
   client.println(iValue);
 }
 
-
-void arduino_ready() {
-  // In response to ping. We just send a throw-away ack to say "im alive"
-  /* cmdMessenger.sendCmd(kSTATUS,"Arduino ready"); */
-}
-
-void unknownCmd()
-{
-  // Default response for unknown commands and corrupt messages
-  /* cmdMessenger.sendCmd(kERR,"Unknown command"); */
-}
-
-
 void measureTemperature() {
   int index = analogRead(A0) - adcSubstract;
   if (index < 0)
@@ -289,7 +273,6 @@ int temperatureToInt(double temperature) {
 
 void setSetPoint(int value) {
   setpoint = double(value) / 10;
-  /* Serial << STATMSG << "Set setpoint to " << setpoint << ENDMSG; */
 }
 
 int getSetPoint() {
@@ -304,26 +287,22 @@ void setDutyCycle(int value) {
   if (value < 0) {
     value = 0;
   }
-  /* Serial << STATMSG << "Set duty cycle to " << value << ENDMSG; */
   dutyCycle = double(value);
 }
 
 void setPValue(double value) {
   pValue = value;
-  /* Serial << STATMSG << "Set P value to " << pValue << ENDMSG; */
   temperaturePID.SetTunings(pValue, iValue, 0);
 }
 
 void setIValue(double value) {
   iValue = value;
-  /* Serial << STATMSG << "Set I value to " << iValue << ENDMSG; */
   temperaturePID.SetTunings(pValue, iValue, 0);
 }
     
 void heaterOn() {
   if (!heaterIsOn) {
     digitalWrite(heaterPin, HIGH);
-    /* Serial << STATMSG << "Turned heater on" << dutyCycle << ENDMSG; */
   }
   heaterIsOn = HIGH;
 }
@@ -331,7 +310,6 @@ void heaterOn() {
 void heaterOff() {
   if (heaterIsOn) {
     digitalWrite(heaterPin, LOW);
-    /* Serial << STATMSG << "Turned heater off" << dutyCycle << ENDMSG; */
   }
   heaterIsOn = LOW;
 }
@@ -339,7 +317,6 @@ void heaterOff() {
 void pumpOn() {
   if (!pumpIsOn) {
     digitalWrite(pumpPin, HIGH);
-    /* Serial << STATMSG << "Turned pump on" << ENDMSG; */
   }
   pumpIsOn = HIGH;
 }
@@ -347,7 +324,6 @@ void pumpOn() {
 void pumpOff() {
   if (pumpIsOn) {
     digitalWrite(pumpPin, LOW);
-    /* Serial << STATMSG << "Turned pump off" << ENDMSG; */
   }
   pumpIsOn = LOW;
 }
