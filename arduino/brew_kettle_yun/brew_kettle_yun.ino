@@ -87,12 +87,19 @@ boolean pumpIsOn = LOW;
 
 void process(YunClient client) {
   String command = client.readStringUntil('/');
+  
+  // If the rest request is like arduino/command
+  // then readStringUntil will read to the end of the
+  // string which has a \r, which we get rid off using
+  // the trim method.
+  command.trim();
+
 
   if (command == "pump") {
     pumpCommand(client);
   }
   if (command == "temperature") {
-    //temperatureCommand(client);
+    temperatureCommand(client);
   }
   else {
     int i;
@@ -101,7 +108,7 @@ void process(YunClient client) {
 
 void pumpCommand(YunClient client) {
   int value;
-  
+
   // Check if we have an argument to command
   // If so set pump to 0/1
   // Else return current value
@@ -123,7 +130,7 @@ void pumpCommand(YunClient client) {
   Bridge.put("pump", String(value));
 }
 
-void temperatureCommmand(YunClient client) {
+void temperatureCommand(YunClient client) {
   // Get current temperature and convert to string
   String tempString = String(temperatureToInt(temperature));
   
@@ -389,15 +396,17 @@ void loop () {
     client.stop();
   }
 
-  if (currentMillis - previousMillis > 100) {
-    measureTemperature();
-    temperaturePID.Compute();
-    controlHeater();
-    previousMillis = currentMillis;
-    slowCount++;
-    if (slowCount > 50) {
-      /* Serial << STATMSG << "Duty Cycle is " << dutyCycle << ENDMSG; */
-      slowCount = 0;
-    }
-  }
+  delay(50);
+
+  /* if (currentMillis - previousMillis > 100) { */
+  /*   measureTemperature(); */
+  /*   temperaturePID.Compute(); */
+  /*   controlHeater(); */
+  /*   previousMillis = currentMillis; */
+  /*   slowCount++; */
+  /*   if (slowCount > 50) { */
+  /*     /\* Serial << STATMSG << "Duty Cycle is " << dutyCycle << ENDMSG; *\/ */
+  /*     slowCount = 0; */
+  /*   } */
+  /* } */
 }
