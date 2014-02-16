@@ -98,8 +98,26 @@ void process(YunClient client) {
   if (command == "pump") {
     pumpCommand(client);
   }
-  if (command == "temperature") {
+  else if (command == "temperature") {
     temperatureCommand(client);
+  }
+  else if (command == "heater") {
+    heaterCommand(client);
+  }
+  else if (command == "pid") {
+    pidCommand(client);
+  }
+  else if (command == "setpoint") {
+    setpointCommand(client);
+  }
+  else if (command == "pvalue") {
+    pvalueCommand(client);
+  }
+  else if (command == "ivalue") {
+    ivalueCommand(client);
+  }
+  else if (command == "fullstatus") {
+    fullstatusCommand(client);
   }
   else {
     int i;
@@ -158,69 +176,86 @@ void heaterCommand(YunClient client) {
   Bridge.put("dutycycle", String(value));
 }
 
-/* void heater_msg() { */
-/*   /\* Serial << STATMSG << "Heater msg received" << ENDMSG; *\/ */
-/*   while (cmdMessenger.available()) { */
-/*     char buf[350] = {'\0'}; */
-/*     cmdMessenger.copyString(buf, 350); */
-/*     // Its of the form int, where int is percent */
-/*     // duty cycle */
-/*     setDutyCycle(atoi(buf)); */
-/*   } */
-/* } */
+void pidCommand(YunClient client) {
 
-/* void setPIDonoff_msg() { */
-/*   /\* Serial << STATMSG << "Set PID on off msg received" << ENDMSG; *\/ */
-/*   while (cmdMessenger.available()) { */
-/*     char buf[350] = {'\0'}; */
-/*     cmdMessenger.copyString(buf, 350); */
-/*     if (strncmp(buf, "1", 1) == 0) { */
-/*       temperaturePID.SetMode(AUTOMATIC); */
-/*     } */
-/*     else { */
-/*       temperaturePID.SetMode(MANUAL); */
-/*     } */
-/*   } */
-/* } */
+  int value = client.parseInt();
 
-/* void getall_msg() { */
-/*   /\* Serial << STATMSG << "All parameters requested" << ENDMSG; *\/ */
-/*   Serial << GETALLMSG << temperature << "," << dutyCycle << "," \ */
-/* 	 << setpoint << "," << temperaturePID.GetMode() \ */
-/* 	 << "," << pumpIsOn << "," << pValue << "," << iValue << ENDMSG; */
-/*   delay(10); */
-/* } */
+  if (value == 1) {
+    temperaturePID.SetMode(AUTOMATIC);
+  }
+  else {
+    temperaturePID.SetMode(MANUAL);
+  }
 
-/* void changeSET_msg() { */
-/*   /\* Serial << STATMSG << "Change in setpoint requested" << ENDMSG; *\/ */
-/*   while (cmdMessenger.available()) { */
-/*     char buf[350] = {'\0'}; */
-/*     cmdMessenger.copyString(buf, 350); */
-/*     // Its of the form int, where int is percent */
-/*     // duty cycle */
-/*     setSetPoint(atoi(buf)); */
-/*   } */
-/* } */
+  client.println(value);
+  Bridge.put("pid", String(value));
+}
 
-/* void setP_msg() { */
-/*   while (cmdMessenger.available()) { */
-/*     char buf[350] = {'\0'}; */
-/*     cmdMessenger.copyString(buf, 350); */
-/*     // Its of the form int, where int is percent */
-/*     // duty cycle */
-/*     setPValue(atof(buf)); */
-/*   } */
-/* } */
+void setpointCommand(YunClient client) {
 
-/* void setI_msg() { */
-/*   while (cmdMessenger.available()) { */
-/*     char buf[350] = {'\0'}; */
-/*     cmdMessenger.copyString(buf, 350); */
-/*     // Its of the form int, where int is percent */
-/*     // duty cycle */
-/*     setIValue(atof(buf)); */
-/*   } */
-/* }     */
+  int value;
+
+  if (client.peek() != -1) {
+    value = client.parseInt();
+    setSetPoint(value);
+  }
+  else {
+    value = getSetPoint();
+  }
+
+  client.println(value);
+  Bridge.put("setpoint", String(value));
+}
+
+void pvalueCommand(YunClient client) {
+
+  int value;
+
+  if (client.peek() != -1) {
+    value = client.parseInt();
+    setPValue(value);
+  }
+  else {
+    value = pValue;
+  }
+
+  client.println(value);
+  Bridge.put("pvalue", String(value));
+}
+
+void ivalueCommand(YunClient client) {
+
+  int value;
+
+  if (client.peek() != -1) {
+    value = client.parseInt();
+    setIValue(value);
+  }
+  else {
+    value = iValue;
+  }
+
+  client.println(value);
+  Bridge.put("ivalue", String(value));
+}
+
+void fullstatusCommand(YunClient client) {
+  
+  client.print(temperature);
+  client.print(',');
+  client.print(dutyCycle);
+  client.print(',');
+  client.print(setpoint);
+  client.print(',');
+  client.print(temperaturePID.GetMode());
+  client.print(',');
+  client.print(pumpIsOn);
+  client.print(',');
+  client.print(pValue);
+  client.print(',');
+  client.println(iValue);
+}
+
 
 void arduino_ready() {
   // In response to ping. We just send a throw-away ack to say "im alive"
@@ -255,6 +290,10 @@ int temperatureToInt(double temperature) {
 void setSetPoint(int value) {
   setpoint = double(value) / 10;
   /* Serial << STATMSG << "Set setpoint to " << setpoint << ENDMSG; */
+}
+
+int getSetPoint() {
+  return int(round(10 * setpoint));
 }
     
 void setDutyCycle(int value) {
