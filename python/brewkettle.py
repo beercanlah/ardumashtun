@@ -5,17 +5,16 @@ import numpy as np
 from numpy.random import random_integers
 from enable.api import ComponentEditor
 from traits.api import HasTraits, Float, Instance, Array, Bool, \
-    Button, String, Str, List, Event
-from traitsui.api import View, Item, Handler, Group, HGroup, TextEditor, \
-    VGroup
-from traitsui.api import View, Group, Item, EnumEditor, \
-    OKButton, CancelButton, ButtonEditor
+    Button, String, Str, List
+from traitsui.api import View, Item, Handler, Group, HGroup, \
+    EnumEditor, OKButton, CancelButton, TextEditor
 from pyface.timer.api import Timer
 from chaco.api import Plot, ArrayPlotData, VPlotContainer
 
 
 def float_to_str(float):
     return "{0:0.2e}".format(float)
+
 
 def list_serial_ports():
     # Windows
@@ -47,13 +46,12 @@ class ComportContainer(HasTraits):
         self.comports = list_serial_ports()
         self.comports.append('Fake')
 
-
     traits_view = View(
         Group(
             Item(name='selected_port',
-                 editor = EnumEditor(name="comports")
+                 editor=EnumEditor(name="comports")
                  )
-            ),
+        ),
         buttons=[OKButton, CancelButton])
 
 
@@ -359,7 +357,7 @@ class KettleMonitor(HasTraits):
 
     view = View(Group(Item("plot_container", editor=ComponentEditor(),
                            show_label=False),
-        label="History plots"),
+                      label="History plots"),
                 resizable=True)
 
 
