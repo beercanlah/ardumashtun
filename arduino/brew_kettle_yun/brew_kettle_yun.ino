@@ -407,6 +407,7 @@ void loop () {
   YunClient client = server.accept();
 
   if (client) {
+    client.setTimeout(5);
     process(client);
     client.stop();
   }
