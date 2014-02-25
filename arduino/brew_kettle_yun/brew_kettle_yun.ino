@@ -24,8 +24,8 @@ byte slowCount;
 double temperature;
 double setpoint;
 double dutyCycle;
-double pValue = 10;
-double iValue = 0.11;
+double pValue;
+double iValue;
 
 PID temperaturePID(&temperature, &dutyCycle, &setpoint,
 		   pValue, iValue, 0, DIRECT);
@@ -95,9 +95,6 @@ void process(YunClient client) {
   if (command == "pump") {
     pumpCommand(client);
   }
-  else if (command == "temperature") {
-    temperatureCommand(client);
-  }
   else if (command == "heater") {
     heaterCommand(client);
   }
@@ -112,9 +109,6 @@ void process(YunClient client) {
   }
   else if (command == "ivalue") {
     ivalueCommand(client);
-  }
-  else if (command == "fullstatus") {
-    fullstatusCommand(client);
   }
   else {
     int i;
@@ -139,19 +133,6 @@ void pumpCommand(YunClient client) {
   else {
     value = pumpIsOn;
   }
-  
-  // Reply with current value
-  client.println(value);
-  Bridge.put("pump", String(value));
-}
-
-void temperatureCommand(YunClient client) {
-  // Get current temperature and convert to string
-  String tempString = String(temperatureToInt(temperature));
-  
-  // Reply with temperature
-  client.println(tempString);
-  Bridge.put("temperature", tempString);
 }
 
 void heaterCommand(YunClient client) {
@@ -167,10 +148,6 @@ void heaterCommand(YunClient client) {
   else {
     value = (int) dutyCycle;
   }
-
-  // Reply with current duty cycle
-  client.println(value);
-  Bridge.put("dutycycle", String(value));
 }
 
 void pidCommand(YunClient client) {
@@ -178,14 +155,11 @@ void pidCommand(YunClient client) {
   int value = client.parseInt();
 
   if (value == 1) {
-    temperaturePID.SetMode(AUTOMATIC);
+    pidOn();
   }
   else {
     temperaturePID.SetMode(MANUAL);
   }
-
-  client.println(value);
-  Bridge.put("pid", String(value));
 }
 
 void setpointCommand(YunClient client) {
@@ -199,9 +173,6 @@ void setpointCommand(YunClient client) {
   else {
     value = getSetPoint();
   }
-
-  client.println(value);
-  Bridge.put("setpoint", String(value));
 }
 
 void pvalueCommand(YunClient client) {
@@ -215,9 +186,6 @@ void pvalueCommand(YunClient client) {
   else {
     value = pValue;
   }
-
-  client.println(value);
-  Bridge.put("pvalue", String(value));
 }
 
 void ivalueCommand(YunClient client) {
@@ -231,27 +199,8 @@ void ivalueCommand(YunClient client) {
   else {
     value = iValue;
   }
-
-  client.println(value);
-  Bridge.put("ivalue", String(value));
 }
 
-void fullstatusCommand(YunClient client) {
-  
-  client.print(temperature);
-  client.print(',');
-  client.print(dutyCycle);
-  client.print(',');
-  client.print(setpoint);
-  client.print(',');
-  client.print(temperaturePID.GetMode());
-  client.print(',');
-  client.print(pumpIsOn);
-  client.print(',');
-  client.print(pValue);
-  client.print(',');
-  client.println(iValue);
-}
 
 void measureTemperature() {
   int index = analogRead(A0) - adcSubstract;
@@ -265,6 +214,7 @@ void measureTemperature() {
   }
   int lookup = pgm_read_word(&temperatureTable[index]);
   temperature = double(lookup)/10.0;
+  Bridge.put("temperature", String(temperature));
 }
 
 int temperatureToInt(double temperature) {
@@ -273,6 +223,7 @@ int temperatureToInt(double temperature) {
 
 void setSetPoint(int value) {
   setpoint = double(value) / 10;
+  Bridge.put("setpoint", String(setpoint));
 }
 
 int getSetPoint() {
@@ -288,16 +239,29 @@ void setDutyCycle(int value) {
     value = 0;
   }
   dutyCycle = double(value);
+  Bridge.put("dutycycle", String(dutyCycle));
 }
 
 void setPValue(double value) {
+  Bridge.put("pvalue", String(value));
   pValue = value;
   temperaturePID.SetTunings(pValue, iValue, 0);
 }
 
 void setIValue(double value) {
+  Bridge.put("ivalue", String(value));
   iValue = value;
   temperaturePID.SetTunings(pValue, iValue, 0);
+}
+
+void pidOn() {
+  temperaturePID.SetMode(AUTOMATIC);
+  Bridge.put("pid", String(1));
+}
+
+void pidOff() {
+  temperaturePID.SetMode(MANUAL);
+  Bridge.put("pid", String(0));
 }
     
 void heaterOn() {
@@ -305,6 +269,7 @@ void heaterOn() {
     digitalWrite(heaterPin, HIGH);
   }
   heaterIsOn = HIGH;
+  Bridge.put("heater", String(1));
 }
 
 void heaterOff() {
@@ -312,6 +277,7 @@ void heaterOff() {
     digitalWrite(heaterPin, LOW);
   }
   heaterIsOn = LOW;
+  Bridge.put("heater", String(0));
 }
 
 void pumpOn() {
@@ -319,6 +285,7 @@ void pumpOn() {
     digitalWrite(pumpPin, HIGH);
   }
   pumpIsOn = HIGH;
+  Bridge.put("pump", String(1));
 }
 
 void pumpOff() {
@@ -326,6 +293,7 @@ void pumpOff() {
     digitalWrite(pumpPin, LOW);
   }
   pumpIsOn = LOW;
+  Bridge.put("pump", String(0));
 }
 
 
@@ -399,30 +367,36 @@ void setup() {
   Bridge.begin();
   server.listenOnLocalhost();
   server.begin();
+
+  // Initialize values
+  setDutyCycle(0);
+  setIValue(0.11);
+  setPValue(10.0);
+  pumpOff();
+  heaterOff();
+  pidOff();
 }
 
 void loop () {
   currentMillis = millis();
   
-  YunClient client = server.accept();
+  if (currentMillis - previousMillis > 100) {
+    YunClient client = server.accept();
 
-  if (client) {
-    client.setTimeout(5);
-    process(client);
-    client.stop();
+    if (client) {
+      client.setTimeout(5);
+      process(client);
+      client.stop();
+    }
+
+    measureTemperature();
+    temperaturePID.Compute();
+    controlHeater();
+    previousMillis = currentMillis;
+    slowCount++;
+    if (slowCount > 50) {
+      /* Serial << STATMSG << "Duty Cycle is " << dutyCycle << ENDMSG; */
+      slowCount = 0;
+    }
   }
-
-  delay(50);
-
-  /* if (currentMillis - previousMillis > 100) { */
-  /*   measureTemperature(); */
-  /*   temperaturePID.Compute(); */
-  /*   controlHeater(); */
-  /*   previousMillis = currentMillis; */
-  /*   slowCount++; */
-  /*   if (slowCount > 50) { */
-  /*     /\* Serial << STATMSG << "Duty Cycle is " << dutyCycle << ENDMSG; *\/ */
-  /*     slowCount = 0; */
-  /*   } */
-  /* } */
 }
