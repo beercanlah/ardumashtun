@@ -136,18 +136,9 @@ void pumpCommand(YunClient client) {
 }
 
 void heaterCommand(YunClient client) {
-  int value;
-  
-  // Check if we have an argument to command
-  // If so it is of form int, where int is duty cycle in percent
-  // Else return current value
-  if (client.peek() != -1) {
-    value = client.parseInt();
-    setDutyCycle(value);
-  }
-  else {
-    value = (int) dutyCycle;
-  }
+
+  double value = client.parseFloat();
+  setDutyCycle(value);
 }
 
 void pidCommand(YunClient client) {
@@ -158,47 +149,27 @@ void pidCommand(YunClient client) {
     pidOn();
   }
   else {
-    temperaturePID.SetMode(MANUAL);
+    pidOff();
   }
 }
 
 void setpointCommand(YunClient client) {
 
-  int value;
+  double value = client.parseFloat();
+  setSetPoint(value);
 
-  if (client.peek() != -1) {
-    value = client.parseInt();
-    setSetPoint(value);
-  }
-  else {
-    value = getSetPoint();
-  }
 }
 
 void pvalueCommand(YunClient client) {
 
-  int value;
-
-  if (client.peek() != -1) {
-    value = client.parseInt();
-    setPValue(value);
-  }
-  else {
-    value = pValue;
-  }
+  double value = client.parseFloat();
+  setPValue(value);
 }
 
 void ivalueCommand(YunClient client) {
 
-  int value;
-
-  if (client.peek() != -1) {
-    value = client.parseInt();
-    setIValue(value);
-  }
-  else {
-    value = iValue;
-  }
+  double value = client.parseFloat();
+  setIValue(value);
 }
 
 
@@ -221,16 +192,13 @@ int temperatureToInt(double temperature) {
   return int(round(10*temperature));
 }
 
-void setSetPoint(int value) {
-  setpoint = double(value) / 10;
+void setSetPoint(double value) {
+  setpoint = value;
   Bridge.put("setpoint", String(setpoint));
 }
 
-int getSetPoint() {
-  return int(round(10 * setpoint));
-}
     
-void setDutyCycle(int value) {
+void setDutyCycle(double value) {
   // Check bounds
   if (value > 100) {
     value = 100;
@@ -238,7 +206,7 @@ void setDutyCycle(int value) {
   if (value < 0) {
     value = 0;
   }
-  dutyCycle = double(value);
+  dutyCycle = value;
   Bridge.put("dutycycle", String(dutyCycle));
 }
 
@@ -354,9 +322,6 @@ void setup() {
   pinMode(heaterPin, OUTPUT);
   dutyCycle = 0;
   
-  measureTemperature();
-  setpoint = temperature + 1;
-  
   temperaturePID.SetMode(MANUAL);
   temperaturePID.SetOutputLimits(0, 100);
   temperaturePID.SetSampleTime(windowSize);
@@ -369,6 +334,9 @@ void setup() {
   server.begin();
 
   // Initialize values
+  measureTemperature();
+  setSetPoint(temperature + 1);
+  
   setDutyCycle(0);
   setIValue(0.11);
   setPValue(10.0);
