@@ -48,7 +48,6 @@ enum
   kDutyCycleStatus,
   kPIDStatus,
   kPID,
-  kHeater,
   kDutyCycle,
   kPump,
   kSetpoint,
