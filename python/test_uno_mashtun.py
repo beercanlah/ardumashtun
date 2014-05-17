@@ -68,4 +68,10 @@ if __name__ == '__main__':
     print 'Testing setpoint'
     tun.setpoint
 
+    print 'Testing pValue'
+    tun.p_value
+
+    print 'Testing iValue'
+    tun.i_value
+
     tun.serial.close()

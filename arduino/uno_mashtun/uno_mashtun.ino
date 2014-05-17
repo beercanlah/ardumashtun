@@ -83,6 +83,14 @@ void onSetpointStatus() {
   cmdMessenger.sendCmd(kSetpointStatus, setpoint);
 }
 
+void onPValueStatus() {
+  cmdMessenger.sendCmd(kSetpointStatus, temperaturePID.GetKp());
+}
+
+void onIValueStatus() {
+  cmdMessenger.sendCmd(kSetpointStatus, temperaturePID.GetKi());
+}
+
 void onPID() {
   bool requestedMode = cmdMessenger.readBoolArg();
 
@@ -122,6 +130,8 @@ void attachCommandCallbacks() {
   cmdMessenger.attach(kHeaterStatus, onHeaterStatus);
   cmdMessenger.attach(kPIDStatus, onPIDStatus);
   cmdMessenger.attach(kSetpointStatus, onSetpointStatus);
+  cmdMessenger.attach(kPValueStatus, onPValueStatus);
+  cmdMessenger.attach(kIValueStatus, onIValueStatus);
   cmdMessenger.attach(kPID, onPID);
   cmdMessenger.attach(kDutyCycleStatus, onDutyCycleStatus);
   cmdMessenger.attach(kDutyCycle, onDutyCycle);
