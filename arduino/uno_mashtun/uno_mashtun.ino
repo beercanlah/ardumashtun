@@ -68,6 +68,9 @@ void onHeaterStatus() {
   cmdMessenger.sendCmd(kHeaterStatus, heaterIsOn);
 }
 
+void onDutyCycleStatus() {
+  cmdMessenger.sendCmd(kDutyCycleStatus, dutyCycle);
+}
 
 void onPump() {
   bool requestedStatus = cmdMessenger.readBoolArg();
@@ -85,6 +88,7 @@ void attachCommandCallbacks() {
   cmdMessenger.attach(kTemperature, onTemperature);
   cmdMessenger.attach(kPumpStatus, onPumpStatus);
   cmdMessenger.attach(kHeaterStatus, onHeaterStatus);
+  cmdMessenger.attach(kDutyCycleStatus, onDutyCycleStatus);
   cmdMessenger.attach(kPump, onPump);
 }
 
