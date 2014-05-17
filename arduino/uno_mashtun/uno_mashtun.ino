@@ -72,6 +72,10 @@ void onDutyCycleStatus() {
   cmdMessenger.sendCmd(kDutyCycleStatus, dutyCycle);
 }
 
+void onPIDStatus() {
+  cmdMessenger.sendCmd(kPIDStatus, temperaturePID.GetMode());
+}
+
 void onDutyCycle() {
   float requestedDC = cmdMessenger.readFloatArg();
   setDutyCycle(requestedDC);
@@ -93,6 +97,7 @@ void attachCommandCallbacks() {
   cmdMessenger.attach(kTemperature, onTemperature);
   cmdMessenger.attach(kPumpStatus, onPumpStatus);
   cmdMessenger.attach(kHeaterStatus, onHeaterStatus);
+  cmdMessenger.attach(kPIDStatus, onPIDStatus);
   cmdMessenger.attach(kDutyCycleStatus, onDutyCycleStatus);
   cmdMessenger.attach(kDutyCycle, onDutyCycle);
   cmdMessenger.attach(kPump, onPump);

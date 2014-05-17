@@ -47,4 +47,7 @@ if __name__ == '__main__':
     print 'Testing heater again'
     tun.heater
 
+    print 'Testing pid'
+    tun.pid
+
     tun.serial.close()
