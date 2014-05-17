@@ -54,8 +54,12 @@ enum
   kIValue,
 };
 
-void OnArduinoReady() {
-  cmdMessenger.sendCmd(kAcknowledge, "Arduino ready");
+void onTemperature() {
+  cmdMessenger.sendCmd(kTemperature, temperature);
+}
+
+void attachCommandCallbacks() {
+  cmdMessenger.attach(kTemperature, onTemperature);
 }
 
 void measureTemperature() {
@@ -197,6 +201,9 @@ void setup() {
   Serial.begin(115200);
 
   cmdMessenger.printLfCr();
+  
+  attachCommandCallbacks();
+  
   cmdMessenger.sendCmd(kAcknowledge, "Arduino ready");
 }
 
