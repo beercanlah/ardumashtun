@@ -11,19 +11,28 @@ class UnoMashtun(object):
     baudrate = 115200
 
     def __init__(self, port):
-        self.port = port
+        self.serial = self._open_port(port)
 
     @property
     def temperature(self):
-        port = self._open_port()
-        port.write('3;\n\r')
-        temp_msg = port.readline()
-        print temp_msg
-        port.close()
+        self._request_value(3)
+        self._echo_readline()
 
-    def _open_port(self):
-        port = serial.Serial(self.port, self.baudrate, timeout=5)
-        ready_msg = port.readline()
-        print ready_msg
-        port.timeout = 1
-        return port
+    @property
+    def pump_status(self):
+        self._request_value(4)
+        self._echo_readline()
+
+    def _open_port(self, port):
+        ser = serial.Serial(port, self.baudrate, timeout=5)
+        msg = ser.readline()
+        print msg
+        ser.timeout = 1
+        return ser
+
+    def _echo_readline(self):
+        msg = self.serial.readline()
+        print msg
+
+    def _request_value(self, message_number):
+        self.serial.write(str(message_number) + ';\n\r')

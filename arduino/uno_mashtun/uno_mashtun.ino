@@ -58,8 +58,13 @@ void onTemperature() {
   cmdMessenger.sendCmd(kTemperature, temperature);
 }
 
+void onPumpStatus() {
+  cmdMessenger.sendCmd(kPumpStatus, pumpIsOn);
+}
+
 void attachCommandCallbacks() {
   cmdMessenger.attach(kTemperature, onTemperature);
+  cmdMessenger.attach(kPumpStatus, onPumpStatus);
 }
 
 void measureTemperature() {
