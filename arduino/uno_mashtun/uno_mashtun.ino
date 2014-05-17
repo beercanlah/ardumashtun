@@ -45,6 +45,7 @@ enum
   kTemperature, 
   kPumpStatus,
   kHeaterStatus,
+  kDutyCycle,
   kPIDStatus,
   kPID,
   kHeater,

@@ -25,7 +25,7 @@ class UnoMashtun(object):
 
     @pump.setter
     def pump(self, value):
-        self.serial.write('9,' + str(int(bool(value))) + ';\n\r')
+        self.serial.write('10,' + str(int(bool(value))) + ';\n\r')
 
     @property
     def heater(self):
