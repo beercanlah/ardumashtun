@@ -72,6 +72,11 @@ void onDutyCycleStatus() {
   cmdMessenger.sendCmd(kDutyCycleStatus, dutyCycle);
 }
 
+void onDutyCycle() {
+  float requestedDC = cmdMessenger.readFloatArg();
+  setDutyCycle(requestedDC);
+}
+
 void onPump() {
   bool requestedStatus = cmdMessenger.readBoolArg();
 
@@ -89,6 +94,7 @@ void attachCommandCallbacks() {
   cmdMessenger.attach(kPumpStatus, onPumpStatus);
   cmdMessenger.attach(kHeaterStatus, onHeaterStatus);
   cmdMessenger.attach(kDutyCycleStatus, onDutyCycleStatus);
+  cmdMessenger.attach(kDutyCycle, onDutyCycle);
   cmdMessenger.attach(kPump, onPump);
 }
 
@@ -114,7 +120,7 @@ void setSetPoint(int value) {
   setpoint = double(value) / 10;
 }
     
-void setDutyCycle(int value) {
+void setDutyCycle(double value) {
   // Check bounds
   if (value > 100) {
     value = 100;
@@ -122,7 +128,7 @@ void setDutyCycle(int value) {
   if (value < 0) {
     value = 0;
   }
-  dutyCycle = double(value);
+  dutyCycle = value;
 }
 
 void setPValue(double value) {

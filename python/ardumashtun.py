@@ -53,6 +53,10 @@ class UnoMashtun(object):
         self._request_value(kDutyCycleStatus)
         self._echo_readline()
 
+    @dutycycle.setter
+    def dutycycle(self, value):
+        self.serial.write(str(kDutyCycle) + ',' + str(value) + ';\n\r')
+
     def _open_port(self, port):
         ser = serial.Serial(port, self.baudrate, timeout=5)
         msg = ser.readline()
