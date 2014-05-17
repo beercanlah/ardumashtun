@@ -1,9 +1,6 @@
 // Get it from https://github.com/dreamcat4/CmdMessenger
 #include <CmdMessenger.h>
 
-// Get it from http://arduiniana.org/libraries/streaming/
-#include <Streaming.h>
-
 // Get it from https://github.com/br3ttb/Arduino-PID-Library
 #include <PID_v1.h>
 
@@ -46,127 +43,17 @@ CmdMessenger cmdMessenger = CmdMessenger(Serial, field_separator, \
 // Commands we send from the Arduino to be received on the PC
 enum
 {
-  kCOMM_ERROR = 000, 
-  kSTATUS = 001,
-  kTEMPERATURE = 002, 
-  kGETALL = 003,
-  kSEND_CMDS_END, // Mustnt delete this line
+  kAcknowledge,
+  kError,
+  kFullStatus,
+  kTemperature, 
+  kPump,
+  kHeater,
+  kPIDStatus,
+  kSetpoint,
+  kPValue,
+  kIValue,
 };
-
-#define STATMSG "1," << currentMillis << ","
-#define GETALLMSG "3," << currentMillis << ","
-#define ENDMSG ";\r\n"
-
-// Commands we send from the PC and want to recieve on the Arduino.
-// They start at the address kSEND_CMDS_END
-messengerCallbackFunction messengerCallbacks[] =
-{
-  pump_msg, // 004 in this example
-  temp_msg, // 005
-  heater_msg, // 006
-  setPIDonoff_msg, // 007
-  getall_msg, // 008
-  changeSET_msg, // 009
-  setP_msg, // 010
-  setI_msg, // 011  
-  NULL
-};
-
-void pump_msg() {
-  /* cmdMessenger.sendCmd(kSTATUS, "Pump msg received"); */
-  while (cmdMessenger.available()) {
-    char buf[350] = {'\0'};
-    cmdMessenger.copyString(buf, 350);
-    if (strncmp(buf, "1", 1) == 0) {
-      pumpOn();
-    }
-    else {
-      pumpOff();
-    }
-  }
-}
-
-void temp_msg() {
-  /* cmdMessenger.sendCmd(kSTATUS, "Request for temperature received"); */
-  char temp[5];
-  itoa(temperatureToInt(temperature), temp, 10);
-  cmdMessenger.sendCmd(kTEMPERATURE, temp);
-}
-
-void heater_msg() {
-  /* Serial << STATMSG << "Heater msg received" << ENDMSG; */
-  while (cmdMessenger.available()) {
-    char buf[350] = {'\0'};
-    cmdMessenger.copyString(buf, 350);
-    // Its of the form int, where int is percent
-    // duty cycle
-    setDutyCycle(atoi(buf));
-  }
-}
-
-void setPIDonoff_msg() {
-  /* Serial << STATMSG << "Set PID on off msg received" << ENDMSG; */
-  while (cmdMessenger.available()) {
-    char buf[350] = {'\0'};
-    cmdMessenger.copyString(buf, 350);
-    if (strncmp(buf, "1", 1) == 0) {
-      temperaturePID.SetMode(AUTOMATIC);
-    }
-    else {
-      temperaturePID.SetMode(MANUAL);
-    }
-  }
-}
-
-void getall_msg() {
-  /* Serial << STATMSG << "All parameters requested" << ENDMSG; */
-  Serial << GETALLMSG << temperature << "," << dutyCycle << "," \
-	 << setpoint << "," << temperaturePID.GetMode() \
-	 << "," << pumpIsOn << "," << pValue << "," << iValue << ENDMSG;
-  delay(10);
-}
-
-void changeSET_msg() {
-  /* Serial << STATMSG << "Change in setpoint requested" << ENDMSG; */
-  while (cmdMessenger.available()) {
-    char buf[350] = {'\0'};
-    cmdMessenger.copyString(buf, 350);
-    // Its of the form int, where int is percent
-    // duty cycle
-    setSetPoint(atoi(buf));
-  }
-}
-
-void setP_msg() {
-  while (cmdMessenger.available()) {
-    char buf[350] = {'\0'};
-    cmdMessenger.copyString(buf, 350);
-    // Its of the form int, where int is percent
-    // duty cycle
-    setPValue(atof(buf));
-  }
-}
-
-void setI_msg() {
-  while (cmdMessenger.available()) {
-    char buf[350] = {'\0'};
-    cmdMessenger.copyString(buf, 350);
-    // Its of the form int, where int is percent
-    // duty cycle
-    setIValue(atof(buf));
-  }
-}    
-
-void arduino_ready() {
-  // In response to ping. We just send a throw-away ack to say "im alive"
-  /* cmdMessenger.sendCmd(kSTATUS,"Arduino ready"); */
-}
-
-void unknownCmd()
-{
-  // Default response for unknown commands and corrupt messages
-  /* cmdMessenger.sendCmd(kERR,"Unknown command"); */
-}
 
 void measureTemperature() {
   int index = analogRead(A0) - adcSubstract;
@@ -188,7 +75,6 @@ int temperatureToInt(double temperature) {
 
 void setSetPoint(int value) {
   setpoint = double(value) / 10;
-  /* Serial << STATMSG << "Set setpoint to " << setpoint << ENDMSG; */
 }
     
 void setDutyCycle(int value) {
@@ -199,26 +85,22 @@ void setDutyCycle(int value) {
   if (value < 0) {
     value = 0;
   }
-  /* Serial << STATMSG << "Set duty cycle to " << value << ENDMSG; */
   dutyCycle = double(value);
 }
 
 void setPValue(double value) {
   pValue = value;
-  Serial << STATMSG << "Set P value to " << pValue << ENDMSG;
   temperaturePID.SetTunings(pValue, iValue, 0);
 }
 
 void setIValue(double value) {
   iValue = value;
-  Serial << STATMSG << "Set I value to " << iValue << ENDMSG;
   temperaturePID.SetTunings(pValue, iValue, 0);
 }
     
 void heaterOn() {
   if (!heaterIsOn) {
     digitalWrite(heaterPin, HIGH);
-    /* Serial << STATMSG << "Turned heater on" << dutyCycle << ENDMSG; */
   }
   heaterIsOn = HIGH;
 }
@@ -226,7 +108,6 @@ void heaterOn() {
 void heaterOff() {
   if (heaterIsOn) {
     digitalWrite(heaterPin, LOW);
-    /* Serial << STATMSG << "Turned heater off" << dutyCycle << ENDMSG; */
   }
   heaterIsOn = LOW;
 }
@@ -234,7 +115,6 @@ void heaterOff() {
 void pumpOn() {
   if (!pumpIsOn) {
     digitalWrite(pumpPin, HIGH);
-    /* Serial << STATMSG << "Turned pump on" << ENDMSG; */
   }
   pumpIsOn = HIGH;
 }
@@ -242,7 +122,6 @@ void pumpOn() {
 void pumpOff() {
   if (pumpIsOn) {
     digitalWrite(pumpPin, LOW);
-    /* Serial << STATMSG << "Turned pump off" << ENDMSG; */
   }
   pumpIsOn = LOW;
 }
@@ -312,19 +191,7 @@ void setup() {
   temperaturePID.SetOutputLimits(0, 100);
   temperaturePID.SetSampleTime(windowSize);
   
-  Serial.begin(57600);
-  cmdMessenger.print_LF_CR();
-  
-  cmdMessenger.attach(unknownCmd);
-  cmdMessenger.attach(4, pump_msg);
-  cmdMessenger.attach(5, temp_msg);
-  cmdMessenger.attach(6, heater_msg);
-  cmdMessenger.attach(7, setPIDonoff_msg);
-  cmdMessenger.attach(8, getall_msg);
-  cmdMessenger.attach(9, changeSET_msg);
-  cmdMessenger.attach(10, setP_msg);
-  cmdMessenger.attach(11, setI_msg);
-  arduino_ready();
+  Serial.begin(115200);
 }
 
 void loop () {
@@ -338,7 +205,6 @@ void loop () {
     previousMillis = currentMillis;
     slowCount++;
     if (slowCount > 50) {
-      /* Serial << STATMSG << "Duty Cycle is " << dutyCycle << ENDMSG; */
       slowCount = 0;
     }
   }
