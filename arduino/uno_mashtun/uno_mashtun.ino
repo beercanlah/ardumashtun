@@ -107,6 +107,11 @@ void onPump() {
     pumpOff();
   }
 }
+
+void onSetpoint() {
+  float reqSetpoint = cmdMessenger.readFloatArg();
+  setSetPoint(reqSetpoint);
+}
   
 
 void attachCommandCallbacks() {
@@ -119,6 +124,7 @@ void attachCommandCallbacks() {
   cmdMessenger.attach(kDutyCycleStatus, onDutyCycleStatus);
   cmdMessenger.attach(kDutyCycle, onDutyCycle);
   cmdMessenger.attach(kPump, onPump);
+  cmdMessenger.attach(kSetpoint, onSetpoint);
 }
 
 void measureTemperature() {

@@ -62,6 +62,8 @@ if __name__ == '__main__':
     tun.pid
 
     print 'Setting setpoint to 25.0'
+    tun.setpoint = 25.0
+    sleep(sleep_time)
 
     print 'Testing setpoint'
     tun.setpoint
