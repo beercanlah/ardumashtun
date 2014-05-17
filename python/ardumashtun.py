@@ -19,9 +19,13 @@ class UnoMashtun(object):
         self._echo_readline()
 
     @property
-    def pump_status(self):
+    def pump(self):
         self._request_value(4)
         self._echo_readline()
+
+    @pump.setter
+    def pump(self, value):
+        self.serial.write('9,' + str(int(bool(value))) + ';\n\r')
 
     def _open_port(self, port):
         ser = serial.Serial(port, self.baudrate, timeout=5)
