@@ -11,9 +11,13 @@ on the blog [beercanlah.com](http://beercanlah.com/).
 
 This repositories contains the eagle files needed to make the Arduino
 shield that is used to control a refurbished water heater, the Arduino
-sketch used in the mashing process and a simple python control
-GUI. More information on each of the subprojects is in the folders
-eagle, arduino and python respectively.
+sketch used in the mashing process and a simple python library to
+control the mashtun. More information on each of the subprojects is
+in the folders eagle, arduino and python respectively.
+
+Currently we have two slightly different versions of the mashtun
+controller sketch, one is intended for the Arduino uno, and one for
+the Arduino Yun.
 
 Everything is licensed under the MIT license, for more information see
 LICENSE.txt.
