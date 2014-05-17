@@ -40,7 +40,7 @@ class UnoMashtun(object):
 
     @pump.setter
     def pump(self, value):
-        self.serial.write(str(kPump) + ',' + str(int(bool(value))) + ';\n\r')
+        self._send_bool(kPump, value)
 
     @property
     def heater(self):
@@ -61,6 +61,10 @@ class UnoMashtun(object):
         self._request_value(kPIDStatus)
         self._echo_readline()
 
+    @pid.setter
+    def pid(self, value):
+        self._send_bool(kPID, value)
+
     def _open_port(self, port):
         ser = serial.Serial(port, self.baudrate, timeout=5)
         msg = ser.readline()
@@ -74,3 +78,6 @@ class UnoMashtun(object):
 
     def _request_value(self, message_number):
         self.serial.write(str(message_number) + ';\n\r')
+
+    def _send_bool(self, msg, boolean):
+        self.serial.write(str(msg) + ',' + str(int(bool(boolean))) + ';\n\r')

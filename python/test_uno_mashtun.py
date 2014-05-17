@@ -50,4 +50,11 @@ if __name__ == '__main__':
     print 'Testing pid'
     tun.pid
 
+    print 'Turning pid on'
+    tun.pid = 1
+    sleep(sleep_time)
+
+    print 'Testing pid again'
+    tun.pid
+
     tun.serial.close()
