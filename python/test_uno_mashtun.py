@@ -47,6 +47,10 @@ if __name__ == '__main__':
     print 'Testing heater again'
     tun.heater
 
+    print 'Turning pid off'
+    tun.pid = 0
+    sleep(sleep_time)
+
     print 'Testing pid'
     tun.pid
 
@@ -56,5 +60,10 @@ if __name__ == '__main__':
 
     print 'Testing pid again'
     tun.pid
+
+    print 'Setting setpoint to 25.0'
+
+    print 'Testing setpoint'
+    tun.setpoint
 
     tun.serial.close()

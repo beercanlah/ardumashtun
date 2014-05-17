@@ -66,6 +66,11 @@ class UnoMashtun(object):
     def pid(self, value):
         self._send_bool(kPID, value)
 
+    @property
+    def setpoint(self):
+        self._request_value(kSetpointStatus)
+        self._echo_readline()
+
     def _open_port(self, port):
         ser = serial.Serial(port, self.baudrate, timeout=5)
         msg = ser.readline()

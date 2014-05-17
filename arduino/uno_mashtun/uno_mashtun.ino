@@ -1,4 +1,5 @@
-// Get it from https://github.com/dreamcat4/CmdMessenger
+// Uses CmdMessenger version 3.6
+// get it from https://github.com/thijse/Arduino-Libraries
 #include <CmdMessenger.h>
 
 // Get it from https://github.com/br3ttb/Arduino-PID-Library
@@ -76,6 +77,10 @@ void onPIDStatus() {
   cmdMessenger.sendCmd(kPIDStatus, temperaturePID.GetMode());
 }
 
+void onSetpointStatus() {
+  cmdMessenger.sendCmd(kSetpointStatus, setpoint);
+}
+
 void onPID() {
   bool requestedMode = cmdMessenger.readBoolArg();
 
@@ -109,6 +114,7 @@ void attachCommandCallbacks() {
   cmdMessenger.attach(kPumpStatus, onPumpStatus);
   cmdMessenger.attach(kHeaterStatus, onHeaterStatus);
   cmdMessenger.attach(kPIDStatus, onPIDStatus);
+  cmdMessenger.attach(kSetpointStatus, onSetpointStatus);
   cmdMessenger.attach(kPID, onPID);
   cmdMessenger.attach(kDutyCycleStatus, onDutyCycleStatus);
   cmdMessenger.attach(kDutyCycle, onDutyCycle);
@@ -133,8 +139,8 @@ int temperatureToInt(double temperature) {
   return int(round(10*temperature));
 }
 
-void setSetPoint(int value) {
-  setpoint = double(value) / 10;
+void setSetPoint(double value) {
+  setpoint = value;
 }
     
 void setDutyCycle(double value) {
