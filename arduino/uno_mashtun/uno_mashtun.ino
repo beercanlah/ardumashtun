@@ -122,6 +122,16 @@ void onSetpoint() {
   float reqSetpoint = cmdMessenger.readFloatArg();
   setSetPoint(reqSetpoint);
 }
+
+void onPValue() {
+  float reqPValue = cmdMessenger.readFloatArg();
+  temperaturePID.SetTunings(reqPValue, temperaturePID.GetKi(), 0);
+}
+
+void onIValue() {
+  float reqIValue = cmdMessenger.readFloatArg();
+  temperaturePID.SetTunings(temperaturePID.GetKp(), reqIValue, 0);
+}
   
 
 void attachCommandCallbacks() {
@@ -137,6 +147,8 @@ void attachCommandCallbacks() {
   cmdMessenger.attach(kDutyCycle, onDutyCycle);
   cmdMessenger.attach(kPump, onPump);
   cmdMessenger.attach(kSetpoint, onSetpoint);
+  cmdMessenger.attach(kPValue, onPValue);
+  cmdMessenger.attach(kIValue, onIValue);
 }
 
 void measureTemperature() {

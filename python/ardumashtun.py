@@ -82,10 +82,18 @@ class UnoMashtun(object):
         self._request_value(kPValueStatus)
         self._echo_readline()
 
+    @p_value.setter
+    def p_value(self, value):
+        self._send_value(kPValue, value)
+
     @property
     def i_value(self):
         self._request_value(kIValueStatus)
         self._echo_readline()
+
+    @i_value.setter
+    def i_value(self, value):
+        self._send_value(kIValue, value)
 
     def _open_port(self, port):
         ser = serial.Serial(port, self.baudrate, timeout=5)
