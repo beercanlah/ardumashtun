@@ -16,6 +16,9 @@ class UnoMashtun(object):
     @property
     def temperature(self):
         port = self._open_port()
+        port.write('3;\n\r')
+        temp_msg = port.readline()
+        print temp_msg
         port.close()
 
     def _open_port(self):
