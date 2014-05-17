@@ -62,6 +62,11 @@ void onPumpStatus() {
   cmdMessenger.sendCmd(kPumpStatus, pumpIsOn);
 }
 
+void onHeaterStatus() {
+  cmdMessenger.sendCmd(kHeaterStatus, heaterIsOn);
+}
+
+
 void onPump() {
   bool requestedStatus = cmdMessenger.readBoolArg();
 
@@ -77,6 +82,7 @@ void onPump() {
 void attachCommandCallbacks() {
   cmdMessenger.attach(kTemperature, onTemperature);
   cmdMessenger.attach(kPumpStatus, onPumpStatus);
+  cmdMessenger.attach(kHeaterStatus, onHeaterStatus);
   cmdMessenger.attach(kPump, onPump);
 }
 

@@ -22,4 +22,7 @@ if __name__ == '__main__':
     print 'Testing pumpStatus again'
     tun.pump
 
+    print 'Testing heater'
+    tun.heater
+
     tun.serial.close()
