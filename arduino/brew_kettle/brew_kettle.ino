@@ -32,13 +32,9 @@ boolean inDutyCycleMode;
 boolean heaterIsOn = LOW;
 boolean pumpIsOn = LOW;
 
-// Mustnt conflict / collide with our message payload data.
-char field_separator = ',';
-char command_separator = ';';
 
-// Attach a new CmdMessenger object to the default Serial port
-CmdMessenger cmdMessenger = CmdMessenger(Serial, field_separator, \
-					 command_separator);
+// Attach CmdMessenger
+CmdMessenger cmdMessenger = CmdMessenger(Serial);
 
 // Commands we send from the Arduino to be received on the PC
 enum
@@ -47,13 +43,20 @@ enum
   kError,
   kFullStatus,
   kTemperature, 
-  kPump,
-  kHeater,
+  kPumpStatus,
+  kHeaterStatus,
   kPIDStatus,
+  kPID,
+  kHeater,
+  kPump,
   kSetpoint,
   kPValue,
   kIValue,
 };
+
+void OnArduinoReady() {
+  cmdMessenger.sendCmd(kAcknowledge, "Arduino ready");
+}
 
 void measureTemperature() {
   int index = analogRead(A0) - adcSubstract;
@@ -192,6 +195,9 @@ void setup() {
   temperaturePID.SetSampleTime(windowSize);
   
   Serial.begin(115200);
+
+  cmdMessenger.printLfCr();
+  cmdMessenger.sendCmd(kAcknowledge, "Arduino ready");
 }
 
 void loop () {
