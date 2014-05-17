@@ -6,14 +6,15 @@ kFullStatus = 2
 kTemperature = 3
 kPumpStatus = 4
 kHeaterStatus = 5
-kDutyCycle = 6
+kDutyCycleStatus = 6
 kPIDStatus = 7
 kPID = 8
 kHeater = 9
-kPump = 10
-kSetpoint = 11
-kPValue = 12
-kIValue = 13
+kDutyCycle = 10
+kPump = 11
+kSetpoint = 12
+kPValue = 13
+kIValue = 14
 
 
 class UnoMashtun(object):
