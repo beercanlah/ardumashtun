@@ -99,6 +99,20 @@ class TestMessagesFromArduino(unittest.TestCase):
             self.tun.serial = self._mocked_serial('4,0;')
             self.assertEqual(self.tun.pump, False)
 
+        def test_heater_status(self):
+            self.tun.serial = self._mocked_serial('5,1;')
+            self.assertEqual(self.tun.heater, True)
+
+            self.tun.serial = self._mocked_serial('5,0;')
+            self.assertEqual(self.tun.heater, False)
+
+        def test_dutycycle_status(self):
+            self.tun.serial = self._mocked_serial('6,1;')
+            self.assertEqual(self.tun.dutycycle, True)
+
+            self.tun.serial = self._mocked_serial('6,0;')
+            self.assertEqual(self.tun.dutycycle, False)
+
         def _mocked_serial(self, response):
             mocked_serial = mock.Mock()
             config = {'readline.return_value': response}

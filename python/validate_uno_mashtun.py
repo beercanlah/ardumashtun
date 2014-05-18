@@ -26,13 +26,14 @@ if __name__ == '__main__':
 
     print 'Setting duty cycle to 100'
     tun.dutycycle = 100
+    sleep(sleep_time)
 
     print 'Testing duty cycle'
     tun.dutycycle
     sleep(sleep_time)
 
     print 'Testing heater'
-    tun.heater
+    print tun.heater
 
     print 'Setting duty cycle to 0'
     tun.dutycycle = 0
@@ -42,7 +43,7 @@ if __name__ == '__main__':
     tun.dutycycle
 
     print 'Testing heater again'
-    tun.heater
+    print tun.heater
 
     print 'Turning pid off'
     tun.pid = 0

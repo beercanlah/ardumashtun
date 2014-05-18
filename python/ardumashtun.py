@@ -45,11 +45,11 @@ class UnoMashtun(object):
 
     @property
     def heater(self):
-        self._request_value(kHeaterStatus)
+        return self._request_boolean(kHeaterStatus)
 
     @property
     def dutycycle(self):
-        self._request_value(kDutyCycleStatus)
+        return self._request_float(kDutyCycleStatus)
 
     @dutycycle.setter
     def dutycycle(self, value):
@@ -116,7 +116,6 @@ class UnoMashtun(object):
 
     def _serial_read(self):
         msg_string = self.serial.readline()
-
         # Remove any linefeeds etc
         msg_string = msg_string.rstrip()
 
