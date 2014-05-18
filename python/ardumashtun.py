@@ -37,7 +37,7 @@ class UnoMashtun(object):
 
     @property
     def pump(self):
-        self._request_value(kPumpStatus)
+        return self._request_boolean(kPumpStatus)
 
     @pump.setter
     def pump(self, value):
@@ -96,10 +96,17 @@ class UnoMashtun(object):
 
     def _request_float(self, message_number):
         self._request_value(message_number)
+        return float(self._read_and_extract_element())
+
+    def _request_boolean(self, message_number):
+        self._request_value(message_number)
+        return self._read_and_extract_element() == '1'
+
+    def _read_and_extract_element(self):
         msg_string = self._serial_read()
         msg_string = msg_string[:-1]
         msg_elements = msg_string.split(',')
-        return float(msg_elements[1])
+        return msg_elements[1]
 
     def _request_value(self, message_number):
         self._serial_write(str(message_number) + ';')

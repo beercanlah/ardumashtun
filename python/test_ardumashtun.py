@@ -89,11 +89,19 @@ class TestMessagesFromArduino(unittest.TestCase):
             self.tun = ardumashtun.UnoMashtun('')
 
         def test_temperature(self):
-            mock_backend = mock.Mock()
-            config = {'readline.return_value': '3,25.0;'}
-            mock_backend.configure_mock(**config)
-            self.tun.serial = mock_backend
+            self.tun.serial = self._mocked_serial('3,25.0;')
             self.assertEqual(self.tun.temperature, 25.0)
+
+        def test_pump_status(self):
+            self.tun.serial = self._mocked_serial('4,1;')
+            self.assertEqual(self.tun.pump, True)
+
+        def _mocked_serial(self, response):
+            mocked_serial = mock.Mock()
+            config = {'readline.return_value': response}
+            mocked_serial.configure_mock(**config)
+            return mocked_serial
+
 
 if __name__ == '__main__':
     unittest.main()
