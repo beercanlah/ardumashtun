@@ -50,34 +50,34 @@ if __name__ == '__main__':
     sleep(sleep_time)
 
     print 'Testing pid'
-    tun.pid
+    print tun.pid
 
     print 'Turning pid on'
     tun.pid = 1
     sleep(sleep_time)
 
     print 'Testing pid again'
-    tun.pid
+    print tun.pid
 
     print 'Setting setpoint to 25.0'
     tun.setpoint = 25.0
     sleep(sleep_time)
 
     print 'Testing setpoint'
-    tun.setpoint
+    print tun.setpoint
 
     print 'Setting pValue to 10.01'
     tun.p_value = 10.01
     sleep(sleep_time)
 
     print 'Testing pValue'
-    tun.p_value
+    print tun.p_value
 
     print 'Setting iValue to 0.15'
     tun.i_value = 0.15
     sleep(sleep_time)
 
     print 'Testing iValue'
-    tun.i_value
+    print tun.i_value
 
     tun.serial.close()

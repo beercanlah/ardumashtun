@@ -113,6 +113,25 @@ class TestMessagesFromArduino(unittest.TestCase):
             self.tun.serial = self._mocked_serial('6,0;')
             self.assertEqual(self.tun.dutycycle, False)
 
+        def test_pid_status(self):
+            self.tun.serial = self._mocked_serial('7,1;')
+            self.assertEqual(self.tun.pid, True)
+
+            self.tun.serial = self._mocked_serial('7,0;')
+            self.assertEqual(self.tun.pid, False)
+
+        def test_setpoint_status(self):
+            self.tun.serial = self._mocked_serial('8,22.5;')
+            self.assertEqual(self.tun.setpoint, 22.5)
+
+        def test_p_value_status(self):
+            self.tun.serial = self._mocked_serial('9,10.0;')
+            self.assertEqual(self.tun.p_value, 10.0)
+
+        def test_i_value_status(self):
+            self.tun.serial = self._mocked_serial('10,0.11;')
+            self.assertEqual(self.tun.i_value, 0.11)
+
         def _mocked_serial(self, response):
             mocked_serial = mock.Mock()
             config = {'readline.return_value': response}

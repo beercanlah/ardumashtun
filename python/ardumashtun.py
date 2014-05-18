@@ -57,7 +57,7 @@ class UnoMashtun(object):
 
     @property
     def pid(self):
-        self._request_value(kPIDStatus)
+        return self._request_boolean(kPIDStatus)
 
     @pid.setter
     def pid(self, value):
@@ -65,7 +65,7 @@ class UnoMashtun(object):
 
     @property
     def setpoint(self):
-        self._request_value(kSetpointStatus)
+        return self._request_float(kSetpointStatus)
 
     @setpoint.setter
     def setpoint(self, value):
@@ -73,7 +73,7 @@ class UnoMashtun(object):
 
     @property
     def p_value(self):
-        self._request_value(kPValueStatus)
+        return self._request_float(kPValueStatus)
 
     @p_value.setter
     def p_value(self, value):
@@ -81,7 +81,7 @@ class UnoMashtun(object):
 
     @property
     def i_value(self):
-        self._request_value(kIValueStatus)
+        return self._request_float(kIValueStatus)
 
     @i_value.setter
     def i_value(self, value):
