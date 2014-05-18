@@ -1,9 +1,10 @@
 import unittest
 import mock
 import ardumashtun
+reload(ardumashtun)
 
 
-class TestMessages(unittest.TestCase):
+class TestMessagesToArduino(unittest.TestCase):
 
     def setUp(self):
         patcher = mock.patch('ardumashtun.serial.Serial')
@@ -77,6 +78,22 @@ class TestMessages(unittest.TestCase):
         # class and not the instance
         msg = str(msg_no) + ',' + str(value) + ';\n\r'
         self.mock_serial().write.assert_called_with(msg)
+
+
+class TestMessagesFromArduino(unittest.TestCase):
+
+        def setUp(self):
+            patcher = mock.patch('ardumashtun.serial.Serial')
+            self.addCleanup(patcher.stop)
+            self.mock_serial = patcher.start()
+            self.tun = ardumashtun.UnoMashtun('')
+
+        def test_temperature(self):
+            mock_backend = mock.Mock()
+            config = {'readline.return_value': '3,25.0;'}
+            mock_backend.configure_mock(**config)
+            self.tun.serial = mock_backend
+            self.assertEqual(self.tun.temperature, 25.0)
 
 if __name__ == '__main__':
     unittest.main()

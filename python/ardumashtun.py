@@ -33,7 +33,7 @@ class UnoMashtun(object):
 
     @property
     def temperature(self):
-        self._request_value(kTemperature)
+        return self._request_float(kTemperature)
 
     @property
     def pump(self):
@@ -94,11 +94,26 @@ class UnoMashtun(object):
         ser.timeout = 1
         return ser
 
+    def _request_float(self, message_number):
+        self._request_value(message_number)
+        msg_string = self._serial_read()
+        msg_string = msg_string[:-1]
+        msg_elements = msg_string.split(',')
+        return float(msg_elements[1])
+
     def _request_value(self, message_number):
         self._serial_write(str(message_number) + ';')
 
     def _serial_write(self, string):
         self.serial.write(string + '\n\r')
+
+    def _serial_read(self):
+        msg_string = self.serial.readline()
+
+        # Remove any linefeeds etc
+        msg_string = msg_string.rstrip()
+
+        return msg_string
 
     def _send_value(self, msg, value):
         self._serial_write(str(msg) + ',' + str(value) + ';')
