@@ -10,7 +10,8 @@ class TestMessages(unittest.TestCase):
         tun = ardumashtun.UnoMashtun('')
         tun.temperature
 
-        mock_serial.write.assert_called_with('1;\n\r')
+        mock_serial().write.assert_called_with('3;\n\r')
+
 
 if __name__ == '__main__':
     unittest.main()

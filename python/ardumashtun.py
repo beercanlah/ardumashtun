@@ -107,7 +107,7 @@ class UnoMashtun(object):
         print msg
 
     def _request_value(self, message_number):
-        self.serial.write(str(message_number) + ';\n\r')
+        self._serial_write(str(message_number) + ';')
 
     def _serial_write(self, string):
         self.serial.write(string + '\n\r')
