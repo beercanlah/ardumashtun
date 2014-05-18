@@ -29,7 +29,7 @@ if __name__ == '__main__':
     sleep(sleep_time)
 
     print 'Testing duty cycle'
-    tun.dutycycle
+    print tun.dutycycle
     sleep(sleep_time)
 
     print 'Testing heater'
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     sleep(sleep_time)
 
     print 'Testing duty cycle again'
-    tun.dutycycle
+    print tun.dutycycle
 
     print 'Testing heater again'
     print tun.heater
