@@ -96,6 +96,9 @@ class TestMessagesFromArduino(unittest.TestCase):
             self.tun.serial = self._mocked_serial('4,1;')
             self.assertEqual(self.tun.pump, True)
 
+            self.tun.serial = self._mocked_serial('4,0;')
+            self.assertEqual(self.tun.pump, False)
+
         def _mocked_serial(self, response):
             mocked_serial = mock.Mock()
             config = {'readline.return_value': response}
