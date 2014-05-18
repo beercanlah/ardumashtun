@@ -13,16 +13,16 @@ class TestMessages(unittest.TestCase):
 
     def test_temperature(self):
         self.tun.temperature
-
-        # I need to call this with () because I patched the
-        # class and not the instance
-        self.mock_serial().write.assert_called_with('3;\n\r')
+        self._assert_message_sent(3)
 
     def test_pump_status(self):
         self.tun.pump
+        self._assert_message_sent(4)
 
-        self.mock_serial().write.assert_called_with('4;\n\r')
-
+    def _assert_message_sent(self, msg_no):
+        # I need to call this with () because I patched the
+        # class and not the instance
+        self.mock_serial().write.assert_called_with(str(msg_no) + ';\n\r')
 
 if __name__ == '__main__':
     unittest.main()
