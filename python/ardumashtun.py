@@ -12,7 +12,7 @@ kSetpointStatus = 8
 kPValueStatus = 9
 kIValueStatus = 10
 kPID = 11
-kDutyCycl = 12
+kDutyCycle = 12
 kPump = 13
 kSetpoint = 14
 kPValue = 15
@@ -57,7 +57,7 @@ class UnoMashtun(object):
 
     @dutycycle.setter
     def dutycycle(self, value):
-        self._send_value(kSetpoint, value)
+        self._send_value(kDutyCycle, value)
 
     @property
     def pid(self):
