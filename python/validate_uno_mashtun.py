@@ -10,22 +10,19 @@ if __name__ == '__main__':
     print 'Testing temperature'
     print tun.temperature
 
-    print 'Testing pumpStatus'
-    tun.pump
-
     print 'Turning on pump'
     tun.pump = 1
     sleep(sleep_time)
 
-    print 'Testing pumpStatus again'
-    tun.pump
+    print 'Testing pumpStatus'
+    print tun.pump
 
     print 'Turning off pump'
     tun.pump = 0
     sleep(sleep_time)
 
     print 'Testing pumpStatus again'
-    tun.pump
+    print tun.pump
 
     print 'Setting duty cycle to 100'
     tun.dutycycle = 100
