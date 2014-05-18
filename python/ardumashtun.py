@@ -109,8 +109,11 @@ class UnoMashtun(object):
     def _request_value(self, message_number):
         self.serial.write(str(message_number) + ';\n\r')
 
+    def _serial_write(self, string):
+        self.serial.write(string + '\n\r')
+
     def _send_value(self, msg, value):
-        self.serial.write(str(msg) + ',' + str(value) + ';\n\r')
+        self._serial_write(str(msg) + ',' + str(value) + ';')
 
     def _send_bool(self, msg, boolean):
-        self.serial.write(str(msg) + ',' + str(int(bool(boolean))) + ';\n\r')
+        self._serial_write(str(msg) + ',' + str(int(bool(boolean))) + ';')
