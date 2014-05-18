@@ -34,12 +34,10 @@ class UnoMashtun(object):
     @property
     def temperature(self):
         self._request_value(kTemperature)
-        self._echo_readline()
 
     @property
     def pump(self):
         self._request_value(kPumpStatus)
-        self._echo_readline()
 
     @pump.setter
     def pump(self, value):
@@ -48,12 +46,10 @@ class UnoMashtun(object):
     @property
     def heater(self):
         self._request_value(kHeaterStatus)
-        self._echo_readline()
 
     @property
     def dutycycle(self):
         self._request_value(kDutyCycleStatus)
-        self._echo_readline()
 
     @dutycycle.setter
     def dutycycle(self, value):
@@ -62,7 +58,6 @@ class UnoMashtun(object):
     @property
     def pid(self):
         self._request_value(kPIDStatus)
-        self._echo_readline()
 
     @pid.setter
     def pid(self, value):
@@ -71,7 +66,6 @@ class UnoMashtun(object):
     @property
     def setpoint(self):
         self._request_value(kSetpointStatus)
-        self._echo_readline()
 
     @setpoint.setter
     def setpoint(self, value):
@@ -80,7 +74,6 @@ class UnoMashtun(object):
     @property
     def p_value(self):
         self._request_value(kPValueStatus)
-        self._echo_readline()
 
     @p_value.setter
     def p_value(self, value):
@@ -89,7 +82,6 @@ class UnoMashtun(object):
     @property
     def i_value(self):
         self._request_value(kIValueStatus)
-        self._echo_readline()
 
     @i_value.setter
     def i_value(self, value):
@@ -97,14 +89,10 @@ class UnoMashtun(object):
 
     def _open_port(self, port):
         ser = serial.Serial(port, self.baudrate, timeout=5)
-        msg = ser.readline()
-        print msg
+        # Arduino ready message, might take a few seconds
+        ser.readline()
         ser.timeout = 1
         return ser
-
-    def _echo_readline(self):
-        msg = self.serial.readline()
-        print msg
 
     def _request_value(self, message_number):
         self._serial_write(str(message_number) + ';')
