@@ -8,7 +8,7 @@ if __name__ == '__main__':
     tun = at.UnoMashtun('/dev/tty.usbmodem1411')
 
     print 'Testing temperature'
-    tun.temperature
+    print tun.temperature
 
     print 'Testing pumpStatus'
     tun.pump
