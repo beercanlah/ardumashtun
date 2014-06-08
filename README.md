@@ -16,6 +16,8 @@ Software
 We have two different versions of the Arduino sketch that runs our software. One intended for use with an Arduino Uno, and one for use with an Arduino Yun.
 When using the Uno you control your mashtun via USB, while the Yun enables you to control your mashtun via the browser.
 
+You can also take a look at the app used for controlling the Uno based mash tun, [kivybrew](https://github.com/beercanlah/kivybrew), and the one controlling the Yun based mash tun, [flapibrew](https://github.com/beercanlah/flapibrew).
+
 Hardware
 -------------
 Version one of the Ardumashtun hardware is a custom Arduino shield intended to be fabricated by a PCB mill. Recently we have started to migrate towards [Seeedstudios](http://www.seeedstudio.com/) PCB and PCBA service.  We have a running prototype board that only uses parts from the Open Parts Library, so that it can be manufactured using Seeedstudios Fusion PCBA.
