@@ -112,12 +112,12 @@ class UnoMashtun(object):
         self._serial_write(str(message_number) + ';')
 
     def _serial_write(self, string):
-        self.serial.write(string + '\n\r')
+        self.serial.write((string + '\n\r').encode())
 
     def _serial_read(self):
         msg_string = self.serial.readline()
         # Remove any linefeeds etc
-        msg_string = msg_string.rstrip()
+        msg_string = msg_string.decode().rstrip()
 
         return msg_string
 
